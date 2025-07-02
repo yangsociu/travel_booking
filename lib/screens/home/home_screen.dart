@@ -73,6 +73,10 @@ class HomeScreen extends StatelessWidget {
                     break;
                   case 3:
                     // TODO: Điều hướng đến trang Profile
+                    Navigator.pushNamed(
+                      context,
+                      AppRoutes.profile,
+                    ); // Điều hướng đến Profile
                     break;
                 }
               },

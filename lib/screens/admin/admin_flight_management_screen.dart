@@ -1,4 +1,5 @@
 // admin_flight_management_screen.dart
+import 'package:booking_app/routes/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:booking_app/blocs/admin_flight/admin_flight_bloc.dart';
@@ -79,6 +80,14 @@ class AdminFlightManagementScreen extends StatelessWidget {
                         child: const FlightForm(),
                       ),
                 );
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.airplane_ticket, color: AppColors.black),
+              tooltip: 'Quản lý vé đặt',
+              onPressed: () {
+                print('Navigating to AdminBookingManagementScreen');
+                Navigator.pushNamed(context, AppRoutes.adminBookingManagement);
               },
             ),
             IconButton(

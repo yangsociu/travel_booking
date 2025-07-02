@@ -11,12 +11,12 @@ class SeatLoading extends SeatState {}
 
 class SeatLoaded extends SeatState {
   final Map<String, bool> seats;
-  final String? selectedSeat;
+  final List<String> selectedSeats; // Đảm bảo là List<String>
 
-  const SeatLoaded({required this.seats, this.selectedSeat});
+  SeatLoaded({required this.seats, required this.selectedSeats});
 
   @override
-  List<Object> get props => [seats, selectedSeat ?? ''];
+  List<Object> get props => [seats, selectedSeats ?? ''];
 }
 
 class SeatError extends SeatState {

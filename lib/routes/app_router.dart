@@ -1,4 +1,7 @@
 // routes/app_router.dart
+import 'package:booking_app/screens/admin/admin_booking_management_screen.dart';
+import 'package:booking_app/screens/profile/profile_screen.dart';
+import 'package:booking_app/services/flight_service.dart';
 import 'package:flutter/material.dart';
 import 'package:booking_app/screens/auth/login_screen.dart';
 import 'package:booking_app/screens/auth/register_screen.dart';
@@ -9,14 +12,11 @@ import 'package:booking_app/screens/seat_selection/seat_selection_screen.dart';
 import 'package:booking_app/screens/payment/payment_screen.dart';
 import 'package:booking_app/screens/payment/payment_success_screen.dart';
 import 'package:booking_app/screens/admin/admin_flight_management_screen.dart';
-import 'package:booking_app/screens/admin/admin_booking_management_screen.dart';
 import 'package:booking_app/routes/app_routes.dart';
 import 'package:booking_app/screens/passenger_info/passenger_info_screen.dart';
-import 'package:booking_app/screens/seat_selection/seat_selection_screen.dart';
 import 'package:booking_app/models/passenger.dart';
 import 'package:booking_app/models/flight_model.dart';
-import 'package:booking_app/screens/payment/payment_screen.dart';
-import 'package:booking_app/screens/payment/payment_success_screen.dart';
+import 'package:booking_app/screens/profile/profile_screen.dart';
 
 class AppRouter {
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -43,10 +43,16 @@ class AppRouter {
         );
       case AppRoutes.passengerInfo:
         final args = settings.arguments as Map<String, dynamic>?;
+        if (args?['passengerCount'] == null) {
+          print('Warning: passengerCount is null in passengerInfo route');
+        }
         return MaterialPageRoute(
           builder:
-              (_) =>
-                  PassengerInfoScreen(flight: args?['flight'] as FlightModel),
+              (_) => PassengerInfoScreen(
+                flight: args?['flight'] as FlightModel,
+                returnFlight: args?['returnFlight'] as FlightModel?,
+                passengerCount: args?['passengerCount'] as int? ?? 1,
+              ),
         );
       case AppRoutes.seatSelection:
         final args = settings.arguments as Map<String, dynamic>?;
@@ -54,7 +60,10 @@ class AppRouter {
           builder:
               (_) => SeatSelectionScreen(
                 flight: args?['flight'] as FlightModel,
-                passenger: args?['passenger'] as Passenger,
+                returnFlight: args?['returnFlight'] as FlightModel?,
+                passengers: args?['passengers'] as List<Passenger>,
+                phoneNumber: args?['phoneNumber'] as String,
+                email: args?['email'] as String,
               ),
         );
       case AppRoutes.payment:
@@ -63,8 +72,13 @@ class AppRouter {
           builder:
               (_) => PaymentScreen(
                 flight: args?['flight'] as FlightModel,
-                passenger: args?['passenger'] as Passenger,
-                seat: args?['seat'] as String,
+                returnFlight: args?['returnFlight'] as FlightModel?,
+                passengers: args?['passengers'] as List<Passenger>,
+                selectedSeats: (args?['selectedSeats'] as List<String>?) ?? [],
+                returnSelectedSeats:
+                    (args?['returnSelectedSeats'] as List<String>?) ?? [],
+                phoneNumber: args?['phoneNumber'] as String,
+                email: args?['email'] as String,
                 ticketPrice: args?['ticketPrice'] as String,
                 duration: args?['duration'] as String,
               ),
@@ -75,9 +89,12 @@ class AppRouter {
           builder:
               (_) => PaymentSuccessScreen(
                 flight: args?['flight'] as FlightModel,
-                passenger: args?['passenger'] as Passenger,
-                seat: args?['seat'] as String,
-                ticketPrice: args?['ticketPrice'] as String,
+                passengers: args?['passengers'] as List<Passenger>,
+                selectedSeats: args?['selectedSeats'] as List<String>,
+                returnFlight: args?['returnFlight'] as FlightModel?,
+                returnSelectedSeats:
+                    args?['returnSelectedSeats'] as List<String>,
+                totalPrice: args?['totalPrice'] as String,
                 duration: args?['duration'] as String,
               ),
         );
@@ -85,10 +102,14 @@ class AppRouter {
         return MaterialPageRoute(
           builder: (_) => const AdminFlightManagementScreenWrapper(),
         );
-      // case AppRoutes.adminBookingManagement:
-      //   return MaterialPageRoute(
-      //     builder: (_) => const AdminBookingManagementScreen(),
-      //   );
+      case AppRoutes.profile:
+        return MaterialPageRoute(
+          builder: (_) => ProfileScreen(flightService: FlightService()),
+        );
+      case AppRoutes.adminBookingManagement:
+        return MaterialPageRoute(
+          builder: (_) => const AdminBookingManagementScreenWrapper(),
+        );
       default:
         return MaterialPageRoute(
           builder:

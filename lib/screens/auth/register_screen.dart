@@ -19,6 +19,11 @@ class RegisterScreen extends StatelessWidget {
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthSuccess) {
+            // Show success SnackBar
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Đăng ký thành công!')),
+            );
+            // Then navigate
             Navigator.pushReplacementNamed(context, AppRoutes.home);
           } else if (state is AuthFailure) {
             ScaffoldMessenger.of(

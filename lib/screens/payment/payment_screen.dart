@@ -15,16 +15,24 @@ import 'package:intl/intl.dart';
 
 class PaymentScreen extends StatefulWidget {
   final FlightModel flight;
-  final Passenger passenger;
-  final String seat;
+  final FlightModel? returnFlight;
+  final List<Passenger> passengers;
+  final List<String> selectedSeats;
+  final List<String> returnSelectedSeats;
+  final String phoneNumber;
+  final String email;
   final String ticketPrice;
   final String duration;
 
   const PaymentScreen({
     super.key,
     required this.flight,
-    required this.passenger,
-    required this.seat,
+    this.returnFlight,
+    required this.passengers,
+    required this.selectedSeats,
+    required this.returnSelectedSeats,
+    required this.phoneNumber,
+    required this.email,
     required this.ticketPrice,
     required this.duration,
   });
@@ -40,6 +48,14 @@ class _PaymentScreenState extends State<PaymentScreen> {
   final _expiryDateController = TextEditingController();
   final _cvvController = TextEditingController();
   String? _cardType;
+  String _calculateFlightDuration() {
+    final duration = widget.flight.arrivalTime.difference(
+      widget.flight.departureTime,
+    );
+    final hours = duration.inHours;
+    final minutes = duration.inMinutes.remainder(60);
+    return '${hours}h ${minutes}m';
+  }
 
   @override
   void dispose() {
@@ -48,6 +64,31 @@ class _PaymentScreenState extends State<PaymentScreen> {
     _expiryDateController.dispose();
     _cvvController.dispose();
     super.dispose();
+  }
+
+  double _calculateTotalPrice() {
+    double total = 0;
+    // Giá vé chuyến đi
+    for (var seat in widget.selectedSeats) {
+      total +=
+          int.parse(seat[0]) <= 4
+              ? widget.flight.price * 1.5
+              : widget.flight.price;
+    }
+    // Giá vé chuyến về (nếu có)
+    if (widget.returnFlight != null) {
+      for (var seat in widget.returnSelectedSeats) {
+        total +=
+            int.parse(seat[0]) <= 4
+                ? widget.returnFlight!.price * 1.5
+                : widget.returnFlight!.price;
+      }
+    }
+    return total;
+  }
+
+  String _formatPrice(double price) {
+    return '${(price / 1000).toStringAsFixed(0)}K';
   }
 
   @override
@@ -64,10 +105,14 @@ class _PaymentScreenState extends State<PaymentScreen> {
               AppRoutes.paymentSuccess,
               arguments: {
                 'flight': widget.flight,
-                'passenger': widget.passenger,
-                'seat': widget.seat,
-                'ticketPrice': widget.ticketPrice,
-                'duration': widget.duration,
+                'passengers': widget.passengers, // Truyền toàn bộ passengers
+                'selectedSeats': widget.selectedSeats, // Truyền toàn bộ seats
+                'returnFlight': widget.returnFlight,
+                'returnSelectedSeats': widget.returnSelectedSeats,
+                'totalPrice': _formatPrice(
+                  _calculateTotalPrice(),
+                ), // <-- truyền String
+                'duration': _calculateFlightDuration(),
               },
             );
           } else if (state is PaymentError) {
@@ -173,19 +218,117 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       const SizedBox(height: 8),
                       const Divider(color: AppColors.white, thickness: 1),
                       const SizedBox(height: 8),
-                      Text(
-                        'Hành khách: ${widget.passenger.firstName} ${widget.passenger.lastName} - Ghế: ${widget.seat}',
-                        style: const TextStyle(
-                          color: AppColors.white,
-                          fontFamily: 'Montserrat',
-                          fontSize: 14,
-                          fontWeight: FontWeight.w400,
+                      Column(
+                        children: List.generate(
+                          widget.passengers.length,
+                          (index) => Text(
+                            'Hành khách: ${widget.passengers[index].firstName} ${widget.passengers[index].lastName} - Ghế: ${widget.selectedSeats[index]}',
+                            style: const TextStyle(
+                              color: AppColors.white,
+                              fontFamily: 'Montserrat',
+                              fontSize: 14,
+                              fontWeight: FontWeight.w400,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
                         ),
-                        textAlign: TextAlign.center,
                       ),
                     ],
                   ),
                 ),
+                if (widget.returnFlight != null) ...[
+                  const SizedBox(height: 20),
+                  // Thông tin chuyến về
+                  Container(
+                    padding: const EdgeInsets.all(16.0),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryColor,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              widget.returnFlight!.departureCode,
+                              style: const TextStyle(
+                                color: AppColors.white,
+                                fontFamily: 'Montserrat',
+                                fontSize: 24,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            Expanded(
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Image.asset(
+                                    'assets/icons/flight_selection_screen/ph_dot-duotone.png',
+                                    width: 28,
+                                    height: 28,
+                                    color: AppColors.white,
+                                  ),
+                                  Container(
+                                    width: 80,
+                                    height: 2,
+                                    color: AppColors.white,
+                                  ),
+                                  Image.asset(
+                                    'assets/icons/flight_selection_screen/weui_location-outlined.png',
+                                    width: 16,
+                                    height: 16,
+                                    color: AppColors.white,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Text(
+                              widget.returnFlight!.arrivalCode,
+                              style: const TextStyle(
+                                color: AppColors.white,
+                                fontFamily: 'Montserrat',
+                                fontSize: 24,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          DateFormat(
+                            'HH:mm dd MMM yyyy',
+                          ).format(widget.returnFlight!.departureTime),
+                          style: const TextStyle(
+                            color: AppColors.white,
+                            fontFamily: 'Montserrat',
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 8),
+                        const Divider(color: AppColors.white, thickness: 1),
+                        const SizedBox(height: 8),
+                        Column(
+                          children: List.generate(
+                            widget.passengers.length,
+                            (index) => Text(
+                              'Hành khách: ${widget.passengers[index].firstName} ${widget.passengers[index].lastName} - Ghế: ${widget.returnSelectedSeats[index]}',
+                              style: const TextStyle(
+                                color: AppColors.white,
+                                fontFamily: 'Montserrat',
+                                fontSize: 14,
+                                fontWeight: FontWeight.w400,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 20),
                 // Tiêu đề
                 const Text(
@@ -305,14 +448,14 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                           context.read<PaymentBloc>().add(
                                             StartPayment(
                                               flight: widget.flight,
-                                              passenger: widget.passenger,
-                                              seat: widget.seat,
-                                              ticketPrice:
-                                                  double.parse(
-                                                    widget.ticketPrice
-                                                        .replaceAll('K', ''),
-                                                  ) *
-                                                  1000,
+                                              returnFlight: widget.returnFlight,
+                                              passengers: widget.passengers,
+                                              selectedSeats:
+                                                  widget.selectedSeats,
+                                              returnSelectedSeats:
+                                                  widget.returnSelectedSeats,
+                                              phoneNumber: widget.phoneNumber,
+                                              email: widget.email,
                                               cardType: _cardType ?? '',
                                               cardNumber:
                                                   _cardNumberController.text,

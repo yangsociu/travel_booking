@@ -12,9 +12,12 @@ abstract class PaymentEvent extends Equatable {
 
 class StartPayment extends PaymentEvent {
   final FlightModel flight;
-  final Passenger passenger;
-  final String seat;
-  final double ticketPrice;
+  final FlightModel? returnFlight;
+  final List<Passenger> passengers;
+  final List<String> selectedSeats;
+  final List<String> returnSelectedSeats;
+  final String phoneNumber;
+  final String email;
   final String cardType;
   final String cardNumber;
   final String cardHolder;
@@ -23,9 +26,12 @@ class StartPayment extends PaymentEvent {
 
   const StartPayment({
     required this.flight,
-    required this.passenger,
-    required this.seat,
-    required this.ticketPrice,
+    this.returnFlight,
+    required this.passengers,
+    required this.selectedSeats,
+    required this.returnSelectedSeats,
+    required this.phoneNumber,
+    required this.email,
     required this.cardType,
     required this.cardNumber,
     required this.cardHolder,
@@ -36,9 +42,12 @@ class StartPayment extends PaymentEvent {
   @override
   List<Object> get props => [
     flight,
-    passenger,
-    seat,
-    ticketPrice,
+    returnFlight ?? '', // Nếu null thì dùng chuỗi rỗng,
+    passengers,
+    selectedSeats,
+    returnSelectedSeats,
+    phoneNumber,
+    email,
     cardType,
     cardNumber,
     cardHolder,

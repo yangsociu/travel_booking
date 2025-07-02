@@ -10,9 +10,14 @@ import 'package:booking_app/routes/app_routes.dart';
 class FlightTicketCard extends StatelessWidget {
   final FlightModel flight;
   final VoidCallback? onTap;
+  final bool isSelected;
 
-  const FlightTicketCard({Key? key, required this.flight, this.onTap})
-    : super(key: key);
+  const FlightTicketCard({
+    Key? key,
+    required this.flight,
+    this.onTap,
+    this.isSelected = false,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

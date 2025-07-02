@@ -12,12 +12,18 @@ import 'package:intl/intl.dart';
 
 class SeatSelectionScreen extends StatelessWidget {
   final FlightModel flight;
-  final Passenger passenger;
+  final FlightModel? returnFlight;
+  final List<Passenger> passengers;
+  final String phoneNumber;
+  final String email;
 
   SeatSelectionScreen({
     super.key,
     required this.flight,
-    required this.passenger,
+    this.returnFlight,
+    required this.passengers,
+    required this.phoneNumber,
+    required this.email,
   });
 
   @override
@@ -55,6 +61,8 @@ class SeatSelectionScreen extends StatelessWidget {
               return Center(child: Text(state.message));
             }
             final seats = state is SeatLoaded ? state.seats : <String, bool>{};
+            final selectedSeats =
+                state is SeatLoaded ? state.selectedSeats : <String>[];
             return SingleChildScrollView(
               padding: const EdgeInsets.all(16.0),
               child: Column(
@@ -132,9 +140,9 @@ class SeatSelectionScreen extends StatelessWidget {
                         const SizedBox(height: 8),
                         const Divider(color: AppColors.white, thickness: 1),
                         const SizedBox(height: 8),
-                        const Text(
-                          '1 hành khách',
-                          style: TextStyle(
+                        Text(
+                          '${passengers.length} hành khách',
+                          style: const TextStyle(
                             color: AppColors.white,
                             fontFamily: 'Montserrat',
                             fontSize: 14,
@@ -143,6 +151,17 @@ class SeatSelectionScreen extends StatelessWidget {
                           textAlign: TextAlign.center,
                         ),
                       ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  // Hiển thị số ghế đã chọn
+                  Text(
+                    'Đã chọn: ${selectedSeats.length}/${passengers.length} ghế',
+                    style: const TextStyle(
+                      color: AppColors.black,
+                      fontFamily: 'Montserrat',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -194,7 +213,7 @@ class SeatSelectionScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 12),
                         for (var row in _businessSeats)
-                          _buildSeatRow(context, row, seats),
+                          _buildSeatRow(context, row, seats, selectedSeats),
                         const SizedBox(height: 20),
                         // Hạng phổ thông
                         const Text(
@@ -220,7 +239,7 @@ class SeatSelectionScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 12),
                         for (var row in _economySeats)
-                          _buildSeatRow(context, row, seats),
+                          _buildSeatRow(context, row, seats, selectedSeats),
                       ],
                     ),
                   ),
@@ -228,21 +247,33 @@ class SeatSelectionScreen extends StatelessWidget {
                   // Nút xác nhận
                   ElevatedButton(
                     onPressed:
-                        state is SeatLoaded && state.selectedSeat != null
+                        selectedSeats.length == passengers.length
                             ? () {
-                              final price =
-                                  state.selectedSeat != null &&
-                                          int.parse(state.selectedSeat![0]) <= 4
-                                      ? _formatPrice(flight.price * 1.5)
-                                      : _formatPrice(flight.price);
+                              // Tính giá vé tổng (giả sử mỗi ghế có giá riêng)
+                              final totalPrice = selectedSeats.fold<double>(0, (
+                                sum,
+                                seat,
+                              ) {
+                                return sum +
+                                    (int.parse(seat[0]) <= 4
+                                        ? flight.price * 1.5
+                                        : flight.price);
+                              });
+                              print(
+                                'Navigating to payment with ${passengers.length} passengers and seats: $selectedSeats',
+                              );
                               Navigator.pushNamed(
                                 context,
                                 AppRoutes.payment,
                                 arguments: {
                                   'flight': flight,
-                                  'passenger': passenger,
-                                  'seat': state.selectedSeat,
-                                  'ticketPrice': price,
+                                  'returnFlight': returnFlight,
+                                  'passengers': passengers,
+                                  'selectedSeats':
+                                      selectedSeats, // phải truyền List<String>
+                                  'phoneNumber': phoneNumber,
+                                  'email': email,
+                                  'ticketPrice': _formatPrice(totalPrice),
                                   'duration': _calculateDuration(
                                     flight.departureTime,
                                     flight.arrivalTime,
@@ -340,6 +371,7 @@ class SeatSelectionScreen extends StatelessWidget {
     BuildContext context,
     List<String> row,
     Map<String, bool> seats,
+    List<String> selectedSeats,
   ) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
@@ -348,15 +380,25 @@ class SeatSelectionScreen extends StatelessWidget {
         children:
             row.map((seat) {
               final isBooked = seats[seat] ?? false;
-              final isSelected =
-                  (context.watch<SeatBloc>().state as SeatLoaded?)
-                      ?.selectedSeat ==
-                  seat;
+              final isSelected = selectedSeats.contains(seat);
               return GestureDetector(
                 onTap:
                     isBooked
                         ? null
-                        : () => context.read<SeatBloc>().add(SelectSeat(seat)),
+                        : () {
+                          if (selectedSeats.length < passengers.length ||
+                              isSelected) {
+                            context.read<SeatBloc>().add(SelectSeat(seat));
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Bạn đã chọn đủ ${passengers.length} ghế',
+                                ),
+                              ),
+                            );
+                          }
+                        },
                 child: Container(
                   width: 40,
                   height: 40,

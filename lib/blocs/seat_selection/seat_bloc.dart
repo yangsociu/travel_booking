@@ -15,7 +15,7 @@ class SeatBloc extends Bloc<SeatEvent, SeatState> {
     emit(SeatLoading());
     try {
       final seats = await flightService.getSeats(event.flightId);
-      emit(SeatLoaded(seats: seats, selectedSeat: null));
+      emit(SeatLoaded(seats: seats, selectedSeats: [])); // Khi load ghế
     } catch (e) {
       emit(SeatError(message: 'Lỗi khi tải danh sách ghế: $e'));
     }
@@ -25,14 +25,18 @@ class SeatBloc extends Bloc<SeatEvent, SeatState> {
     if (state is SeatLoaded) {
       final currentState = state as SeatLoaded;
       if (currentState.seats[event.seat] == true) {
-        emit(SeatError(message: 'Ghế đã được đặt'));
+        emit(SeatError(message: 'Ghế ${event.seat} đã được đặt'));
         return;
       }
-      final newSelectedSeat =
-          currentState.selectedSeat == event.seat ? null : event.seat;
+      final newSelectedSeats = List<String>.from(currentState.selectedSeats);
+      if (newSelectedSeats.contains(event.seat)) {
+        newSelectedSeats.remove(event.seat); // Bỏ chọn nếu ghế đã được chọn
+      } else {
+        newSelectedSeats.add(event.seat); // Thêm ghế vào danh sách
+      }
       emit(
-        SeatLoaded(seats: currentState.seats, selectedSeat: newSelectedSeat),
-      );
+        SeatLoaded(seats: currentState.seats, selectedSeats: newSelectedSeats),
+      ); // Khi chọn ghế
     }
   }
 }

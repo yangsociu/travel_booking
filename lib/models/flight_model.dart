@@ -1,12 +1,8 @@
-// flight_model.dart
-// models/flight_model.dart
-// Model cho dữ liệu chuyến bay
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 
 class FlightModel extends Equatable {
-  final String id; // Mã chuyến bay (VD: VN123)
-  final String documentId; // documentID trong Firestore (VD: flight1)
+  final String id;
+  final String documentId;
   final String departureCity;
   final String arrivalCity;
   final String departureCode;
@@ -27,23 +23,32 @@ class FlightModel extends Equatable {
     required this.price,
   });
 
-  factory FlightModel.fromJson(Map<String, dynamic> json, String docId) {
+  factory FlightModel.fromJson(Map<String, dynamic> json, String documentId) {
     return FlightModel(
-      id: json['id'] as String,
-      documentId: docId,
-      departureCity: json['departureCity'] as String,
-      arrivalCity: json['arrivalCity'] as String,
-      departureCode: json['departureCode'] as String,
-      arrivalCode: json['arrivalCode'] as String,
-      departureTime: DateTime.parse(json['departureTime'] as String),
-      arrivalTime: DateTime.parse(json['arrivalTime'] as String),
-      price: double.parse(json['price'] as String),
+      id: (json['id'] as String?) ?? documentId, // Dùng documentId làm mặc định
+      documentId: documentId,
+      departureCity: (json['departureCity'] as String?) ?? 'Unknown',
+      arrivalCity: (json['arrivalCity'] as String?) ?? 'Unknown',
+      departureCode: (json['departureCode'] as String?) ?? 'Unknown',
+      arrivalCode: (json['arrivalCode'] as String?) ?? 'Unknown',
+      departureTime:
+          json['departureTime'] != null
+              ? DateTime.tryParse(json['arrivalTime'] as String? ?? '') ??
+                  DateTime.now()
+              : DateTime.now(),
+      arrivalTime:
+          json['arrivalTime'] != null
+              ? DateTime.tryParse(json['arrivalTime'] as String? ?? '') ??
+                  DateTime.now()
+              : DateTime.now(),
+      price: double.tryParse(json['price']?.toString() ?? '0.0') ?? 0.0,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'documentId': documentId,
       'departureCity': departureCity,
       'arrivalCity': arrivalCity,
       'departureCode': departureCode,

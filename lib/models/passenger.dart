@@ -1,52 +1,55 @@
 import 'package:equatable/equatable.dart';
 
 class Passenger extends Equatable {
+  final String email;
   final String firstName;
   final String lastName;
-  final String idNumber;
-  final int birthYear;
-  final String gender;
-  final String phoneNumber;
-  final String email;
+  final String? phoneNumber;
+  final String? gender;
+  final int? birthYear;
+  final String? idNumber;
 
   const Passenger({
+    required this.email,
     required this.firstName,
     required this.lastName,
-    required this.idNumber,
-    required this.birthYear,
-    required this.gender,
-    required this.phoneNumber,
-    required this.email,
+    this.phoneNumber,
+    this.gender,
+    this.birthYear,
+    this.idNumber,
   });
 
-  Map<String, dynamic> toJson() => {
-    'firstName': firstName,
-    'lastName': lastName,
-    'idNumber': idNumber,
-    'birthYear': birthYear,
-    'gender': gender,
-    'phoneNumber': phoneNumber,
-    'email': email,
-  };
-
   factory Passenger.fromJson(Map<String, dynamic> json) => Passenger(
-    firstName: json['firstName'] as String,
-    lastName: json['lastName'] as String,
-    idNumber: json['idNumber'] as String,
-    birthYear: json['birthYear'] as int,
-    gender: json['gender'] as String,
-    phoneNumber: json['phoneNumber'] as String,
-    email: json['email'] as String,
+    email: json['email']?.toString() ?? 'unknown@example.com',
+    firstName: json['firstName']?.toString() ?? 'Unknown',
+    lastName: json['lastName']?.toString() ?? 'Unknown',
+    phoneNumber: json['phoneNumber']?.toString(),
+    gender: json['gender']?.toString(),
+    birthYear:
+        json['birthYear'] is int
+            ? json['birthYear'] as int
+            : int.tryParse(json['birthYear']?.toString() ?? ''),
+    idNumber: json['idNumber']?.toString(),
   );
 
+  Map<String, dynamic> toJson() => {
+    'email': email,
+    'firstName': firstName,
+    'lastName': lastName,
+    if (phoneNumber != null) 'phoneNumber': phoneNumber,
+    if (gender != null) 'gender': gender,
+    if (birthYear != null) 'birthYear': birthYear,
+    if (idNumber != null) 'idNumber': idNumber,
+  };
+
   @override
-  List<Object> get props => [
+  List<Object?> get props => [
+    email,
     firstName,
     lastName,
-    idNumber,
-    birthYear,
-    gender,
     phoneNumber,
-    email,
+    gender,
+    birthYear,
+    idNumber,
   ];
 }

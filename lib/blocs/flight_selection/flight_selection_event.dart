@@ -14,11 +14,13 @@ class LoadFlights extends FlightSelectionEvent {
   final String departureCity;
   final String arrivalCity;
   final DateTime departureDate;
+  final DateTime? returnDate; // <-- Thêm dòng này
 
   const LoadFlights({
     required this.departureCity,
     required this.arrivalCity,
     required this.departureDate,
+    this.returnDate, // <-- Gán vào trường của class
   });
 
   @override

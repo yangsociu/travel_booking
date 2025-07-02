@@ -5,7 +5,13 @@ import 'package:intl/intl.dart';
 
 class FlightTicketInfo extends StatelessWidget {
   final FlightModel flight;
-  const FlightTicketInfo({super.key, required this.flight});
+  final int passengerCount; // Thêm dòng này
+
+  const FlightTicketInfo({
+    super.key,
+    required this.flight,
+    required this.passengerCount,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -74,9 +80,9 @@ class FlightTicketInfo extends StatelessWidget {
           const SizedBox(height: 8),
           const Divider(color: AppColors.white, thickness: 1),
           const SizedBox(height: 8),
-          const Text(
-            '1 hành khách',
-            style: TextStyle(
+          Text(
+            '$passengerCount hành khách',
+            style: const TextStyle(
               color: AppColors.white,
               fontFamily: 'Montserrat',
               fontSize: 14,

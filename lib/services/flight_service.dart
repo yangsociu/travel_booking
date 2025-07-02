@@ -241,6 +241,19 @@ class FlightService {
 
   Future<void> bookSeat(String flightId, String seatId) async {
     try {
+      final seatDoc =
+          await _firestore
+              .collection('flights')
+              .doc(flightId)
+              .collection('seats')
+              .doc(seatId)
+              .get();
+      if (!seatDoc.exists) {
+        throw Exception('Seat $seatId does not exist for flight $flightId');
+      }
+      if (seatDoc.data()!['isBooked'] == true) {
+        throw Exception('Seat $seatId is already booked for flight $flightId');
+      }
       await _firestore
           .collection('flights')
           .doc(flightId)
@@ -259,6 +272,8 @@ class FlightService {
     required Passenger passenger,
     required String seat,
     required double ticketPrice,
+    required String phoneNumber, // thêm dòng này
+    required String email,
   }) async {
     try {
       final ticket = Ticket(
@@ -268,12 +283,35 @@ class FlightService {
         seat: seat,
         ticketPrice: ticketPrice,
         bookingTime: DateTime.now(),
+        documentId: '',
+        phoneNumber: phoneNumber, // <-- Truyền đúng giá trị
+        email: email, // <-- Truyền đúng giá trị
       );
       await _firestore.collection('tickets').add(ticket.toJson());
       print('Ticket booked for flight: ${flight.id}, seat: $seat');
     } catch (e) {
       print('Error booking ticket: $e');
       throw Exception('Lỗi khi đặt vé: $e');
+    }
+  }
+
+  Future<List<Ticket>> getUserTickets(String email) async {
+    try {
+      final snapshot =
+          await _firestore
+              .collection('tickets')
+              .where('passenger.email', isEqualTo: email)
+              .orderBy('bookingTime', descending: true)
+              .get();
+      final tickets =
+          snapshot.docs
+              .map((doc) => Ticket.fromJson(doc.data(), doc.id))
+              .toList();
+      print('Fetched ${tickets.length} tickets for email: $email');
+      return tickets;
+    } catch (e) {
+      print('Error fetching tickets: $e');
+      throw Exception('Lỗi khi lấy danh sách vé: $e');
     }
   }
 }

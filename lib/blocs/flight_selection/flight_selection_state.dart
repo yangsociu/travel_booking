@@ -16,12 +16,16 @@ class FlightSelectionInitial extends FlightSelectionState {}
 class FlightSelectionLoading extends FlightSelectionState {}
 
 class FlightSelectionLoaded extends FlightSelectionState {
-  final List<FlightModel> flights;
+  final List<FlightModel> departureFlights;
+  final List<FlightModel> returnFlights;
 
-  const FlightSelectionLoaded({required this.flights});
+  const FlightSelectionLoaded({
+    required this.departureFlights,
+    required this.returnFlights,
+  });
 
   @override
-  List<Object> get props => [flights];
+  List<Object> get props => [departureFlights, returnFlights];
 }
 
 class FlightSelectionError extends FlightSelectionState {

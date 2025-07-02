@@ -1,4 +1,3 @@
-// payment_success_screen.dart
 import 'package:flutter/material.dart';
 import 'package:booking_app/models/flight_model.dart';
 import 'package:booking_app/models/passenger.dart';
@@ -9,17 +8,21 @@ import 'package:intl/intl.dart';
 
 class PaymentSuccessScreen extends StatefulWidget {
   final FlightModel flight;
-  final Passenger passenger;
-  final String seat;
-  final String ticketPrice;
+  final List<Passenger> passengers;
+  final List<String> selectedSeats;
+  final FlightModel? returnFlight;
+  final List<String> returnSelectedSeats;
+  final String totalPrice;
   final String duration;
 
   const PaymentSuccessScreen({
     super.key,
     required this.flight,
-    required this.passenger,
-    required this.seat,
-    required this.ticketPrice,
+    required this.passengers,
+    required this.selectedSeats,
+    this.returnFlight,
+    required this.returnSelectedSeats,
+    required this.totalPrice,
     required this.duration,
   });
 
@@ -85,7 +88,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Bạn đã đặt vé thành công, ${widget.passenger.firstName} ${widget.passenger.lastName}. Vui lòng kiểm tra email của bạn.',
+                            'Bạn đã đặt vé thành công cho ${widget.passengers.length} hành khách. Vui lòng kiểm tra email của bạn.',
                             style: const TextStyle(
                               color: AppColors.grey,
                               fontFamily: 'Montserrat',
@@ -113,9 +116,6 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final String classType =
-        int.parse(widget.seat[0]) <= 4 ? 'Thương gia' : 'Phổ thông';
-
     return Scaffold(
       backgroundColor: AppColors.white,
       body: SafeArea(
@@ -124,157 +124,80 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Bảng thông tin vé
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppColors.white,
-                  borderRadius: BorderRadius.circular(6),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.grey.withOpacity(0.3),
-                      blurRadius: 4,
-                      offset: const Offset(2, 2),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Cột trái: Giá vé, số ghế
-                        Expanded(
-                          flex: 4,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                widget.ticketPrice,
-                                style: const TextStyle(
-                                  color: AppColors.primaryColor,
-                                  fontFamily: 'Montserrat',
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Ghế: ${widget.seat}',
-                                style: const TextStyle(
-                                  color: AppColors.black,
-                                  fontFamily: 'Montserrat',
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        // Cột phải: Thông tin chuyến bay
-                        Expanded(
-                          flex: 6,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text(
-                                '${widget.flight.departureCity} - ${widget.flight.arrivalCity}',
-                                style: const TextStyle(
-                                  color: AppColors.black,
-                                  fontFamily: 'Montserrat',
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                                textAlign: TextAlign.end,
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                '${widget.flight.departureCode} - ${widget.flight.arrivalCode}',
-                                style: const TextStyle(
-                                  color: AppColors.black,
-                                  fontFamily: 'Montserrat',
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                                textAlign: TextAlign.end,
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                DateFormat(
-                                  'HH:mm dd MMM yyyy',
-                                ).format(widget.flight.departureTime),
-                                style: const TextStyle(
-                                  color: AppColors.grey,
-                                  fontFamily: 'Montserrat',
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                                textAlign: TextAlign.end,
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Thời gian bay: ${widget.duration}',
-                                style: const TextStyle(
-                                  color: AppColors.black,
-                                  fontFamily: 'Montserrat',
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                                textAlign: TextAlign.end,
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Hạng vé: $classType',
-                                style: const TextStyle(
-                                  color: AppColors.black,
-                                  fontFamily: 'Montserrat',
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                                textAlign: TextAlign.end,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    // Divider nét đứt
-                    Container(
-                      height: 1,
-                      decoration: const BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(
-                            color: AppColors.black,
-                            width: 1,
-                            style: BorderStyle.solid,
-                          ),
-                        ),
-                      ),
-                      child: CustomPaint(painter: DashedLinePainter()),
-                    ),
-                    const SizedBox(height: 16),
-                    // Mã chuyến bay
-                    Text(
-                      'Mã chuyến bay: ${widget.flight.id}',
-                      style: const TextStyle(
-                        color: AppColors.black,
-                        fontFamily: 'Montserrat',
-                        fontSize: 14,
-                        fontWeight: FontWeight.w400,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 16),
-                    // Mã vạch
-                    Image.asset(
-                      'assets/images/ma_vach.png',
-                      height: 60,
-                      fit: BoxFit.contain,
-                    ),
-                  ],
+              // Tổng giá
+              Text(
+                'Tổng giá: ${widget.totalPrice}',
+                style: const TextStyle(
+                  color: AppColors.primaryColor,
+                  fontFamily: 'Montserrat',
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
+              const SizedBox(height: 16),
+              // Danh sách vé chuyến đi
+              Text(
+                'Chuyến đi: ${widget.flight.departureCity} - ${widget.flight.arrivalCity}',
+                style: const TextStyle(
+                  color: AppColors.black,
+                  fontFamily: 'Montserrat',
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 8),
+              ...List.generate(widget.passengers.length, (index) {
+                final passenger = widget.passengers[index];
+                final seat = widget.selectedSeats[index];
+                final seatNumber = int.tryParse(seat[0]) ?? 5;
+                final ticketPrice =
+                    seatNumber <= 4
+                        ? widget.flight.price * 1.5
+                        : widget.flight.price;
+                final classType = seatNumber <= 4 ? 'Thương gia' : 'Phổ thông';
+                return _buildTicketCard(
+                  passenger: passenger,
+                  seat: seat,
+                  ticketPrice: ticketPrice.toString(),
+                  flight: widget.flight,
+                  classType: classType,
+                  duration: widget.duration,
+                );
+              }),
+              // Danh sách vé chuyến về (nếu có)
+              if (widget.returnFlight != null &&
+                  widget.returnSelectedSeats.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                Text(
+                  'Chuyến về: ${widget.returnFlight!.departureCity} - ${widget.returnFlight!.arrivalCity}',
+                  style: const TextStyle(
+                    color: AppColors.black,
+                    fontFamily: 'Montserrat',
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                ...List.generate(widget.passengers.length, (index) {
+                  final passenger = widget.passengers[index];
+                  final seat = widget.returnSelectedSeats[index];
+                  final seatNumber = int.tryParse(seat[0]) ?? 5;
+                  final ticketPrice =
+                      seatNumber <= 4
+                          ? widget.returnFlight!.price * 1.5
+                          : widget.returnFlight!.price;
+                  final classType =
+                      seatNumber <= 4 ? 'Thương gia' : 'Phổ thông';
+                  return _buildTicketCard(
+                    passenger: passenger,
+                    seat: seat,
+                    ticketPrice: ticketPrice.toString(),
+                    flight: widget.returnFlight!,
+                    classType: classType,
+                    duration: widget.duration,
+                  );
+                }),
+              ],
               const SizedBox(height: 20),
               // Nút Trở về
               Center(
@@ -292,6 +215,177 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildTicketCard({
+    required Passenger passenger,
+    required String seat,
+    required String ticketPrice,
+    required FlightModel flight,
+    required String classType,
+    required String duration,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(6),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.grey.withOpacity(0.3),
+            blurRadius: 4,
+            offset: const Offset(2, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Cột trái: Giá vé, số ghế
+              Expanded(
+                flex: 4,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '$ticketPrice',
+                      style: const TextStyle(
+                        color: AppColors.primaryColor,
+                        fontFamily: 'Montserrat',
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Ghế: $seat',
+                      style: const TextStyle(
+                        color: AppColors.black,
+                        fontFamily: 'Montserrat',
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Hành khách: ${passenger.firstName} ${passenger.lastName}',
+                      style: const TextStyle(
+                        color: AppColors.black,
+                        fontFamily: 'Montserrat',
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Cột phải: Thông tin chuyến bay
+              Expanded(
+                flex: 6,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      '${flight.departureCity} - ${flight.arrivalCity}',
+                      style: const TextStyle(
+                        color: AppColors.black,
+                        fontFamily: 'Montserrat',
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textAlign: TextAlign.end,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${flight.departureCode} - ${flight.arrivalCode}',
+                      style: const TextStyle(
+                        color: AppColors.black,
+                        fontFamily: 'Montserrat',
+                        fontSize: 24,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textAlign: TextAlign.end,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      DateFormat(
+                        'HH:mm dd MMM yyyy',
+                      ).format(flight.departureTime),
+                      style: const TextStyle(
+                        color: AppColors.grey,
+                        fontFamily: 'Montserrat',
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                      ),
+                      textAlign: TextAlign.end,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Thời gian bay: $duration',
+                      style: const TextStyle(
+                        color: AppColors.black,
+                        fontFamily: 'Montserrat',
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                      ),
+                      textAlign: TextAlign.end,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Hạng vé: $classType',
+                      style: const TextStyle(
+                        color: AppColors.black,
+                        fontFamily: 'Montserrat',
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                      ),
+                      textAlign: TextAlign.end,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          // Divider nét đứt
+          Container(
+            height: 1,
+            decoration: const BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: AppColors.black,
+                  width: 1,
+                  style: BorderStyle.solid,
+                ),
+              ),
+            ),
+            child: CustomPaint(painter: DashedLinePainter()),
+          ),
+          const SizedBox(height: 16),
+          // Mã chuyến bay
+          Text(
+            'Mã chuyến bay: ${flight.id}',
+            style: const TextStyle(
+              color: AppColors.black,
+              fontFamily: 'Montserrat',
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+          // Mã vạch
+          Image.asset(
+            'assets/images/ma_vach.png',
+            height: 60,
+            fit: BoxFit.contain,
+          ),
+        ],
       ),
     );
   }

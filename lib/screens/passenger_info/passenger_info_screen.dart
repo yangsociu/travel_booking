@@ -9,34 +9,21 @@ import 'package:intl/intl.dart';
 
 class PassengerInfoScreen extends StatefulWidget {
   final FlightModel flight;
+  final FlightModel? returnFlight;
+  final int passengerCount;
 
-  const PassengerInfoScreen({super.key, required this.flight});
+  const PassengerInfoScreen({
+    super.key,
+    required this.flight,
+    this.returnFlight,
+    required this.passengerCount,
+  });
 
   @override
   _PassengerInfoScreenState createState() => _PassengerInfoScreenState();
 }
 
 class _PassengerInfoScreenState extends State<PassengerInfoScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _firstNameController = TextEditingController();
-  final _lastNameController = TextEditingController();
-  final _idNumberController = TextEditingController();
-  final _birthYearController = TextEditingController();
-  String? _gender;
-  final _phoneNumberController = TextEditingController();
-  final _emailController = TextEditingController();
-
-  @override
-  void dispose() {
-    _firstNameController.dispose();
-    _lastNameController.dispose();
-    _idNumberController.dispose();
-    _birthYearController.dispose();
-    _phoneNumberController.dispose();
-    _emailController.dispose();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -64,15 +51,31 @@ class _PassengerInfoScreenState extends State<PassengerInfoScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            FlightTicketInfo(flight: widget.flight), // <-- Thêm dòng này ở đây
+            FlightTicketInfo(
+              flight: widget.flight,
+              passengerCount: widget.passengerCount,
+            ),
+            if (widget.returnFlight != null) ...[
+              const SizedBox(height: 20),
+              FlightTicketInfo(
+                flight: widget.returnFlight!,
+                passengerCount: widget.passengerCount,
+              ),
+            ],
             const SizedBox(height: 20),
-            // Thay phần Container chứa Form bằng:
             PassengerForm(
-              onSubmit: (passenger) {
+              passengerCount: widget.passengerCount, // Đảm bảo dòng này có
+              onSubmit: (passengers, phoneNumber, email) {
                 Navigator.pushNamed(
                   context,
                   AppRoutes.seatSelection,
-                  arguments: {'flight': widget.flight, 'passenger': passenger},
+                  arguments: {
+                    'flight': widget.flight,
+                    'returnFlight': widget.returnFlight,
+                    'passengers': passengers,
+                    'phoneNumber': phoneNumber,
+                    'email': email,
+                  },
                 );
               },
             ),

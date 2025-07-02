@@ -1,4 +1,5 @@
 // payment_bloc.dart
+import 'package:booking_app/models/passenger.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:booking_app/blocs/payment/payment_event.dart';
 import 'package:booking_app/blocs/payment/payment_state.dart';
@@ -31,15 +32,70 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
       }
 
       // Đặt ghế
-      await flightService.bookSeat(event.flight.documentId, event.seat);
+      for (var seat in event.selectedSeats) {
+        await flightService.bookSeat(event.flight.documentId, seat);
+        print('Booked seat: $seat for flight ${event.flight.documentId}');
+      }
 
       // Lưu vé
-      await flightService.bookTicket(
-        flight: event.flight,
-        passenger: event.passenger,
-        seat: event.seat,
-        ticketPrice: event.ticketPrice,
-      );
+      // Lưu vé cho chuyến đi
+      for (int i = 0; i < event.passengers.length; i++) {
+        final passenger = event.passengers[i];
+        final seat = event.selectedSeats[i];
+        final ticketPrice =
+            int.parse(seat[0]) <= 4
+                ? event.flight.price * 1.5
+                : event.flight.price;
+        await flightService.bookTicket(
+          flight: event.flight,
+          passenger: Passenger(
+            firstName: passenger.firstName,
+            lastName: passenger.lastName,
+            idNumber: passenger.idNumber,
+            birthYear: passenger.birthYear,
+            gender: passenger.gender,
+            phoneNumber: event.phoneNumber,
+            email: event.email,
+          ),
+          seat: seat,
+          ticketPrice: ticketPrice,
+          phoneNumber: event.phoneNumber,
+          email: event.email,
+        );
+        print(
+          'Booked ticket for passenger ${passenger.firstName} ${passenger.lastName}, seat: $seat, price: $ticketPrice',
+        );
+      }
+      // Lưu vé cho chuyến về (nếu có)
+      if (event.returnFlight != null) {
+        for (int i = 0; i < event.passengers.length; i++) {
+          final passenger = event.passengers[i];
+          final seat = event.returnSelectedSeats[i];
+          final ticketPrice =
+              int.parse(seat[0]) <= 4
+                  ? event.returnFlight!.price * 1.5
+                  : event.returnFlight!.price;
+          await flightService.bookTicket(
+            flight: event.returnFlight!,
+            passenger: Passenger(
+              firstName: passenger.firstName,
+              lastName: passenger.lastName,
+              idNumber: passenger.idNumber,
+              birthYear: passenger.birthYear,
+              gender: passenger.gender,
+              phoneNumber: event.phoneNumber,
+              email: event.email,
+            ),
+            seat: seat,
+            ticketPrice: ticketPrice,
+            phoneNumber: event.phoneNumber,
+            email: event.email,
+          );
+          print(
+            'Booked ticket for passenger ${passenger.firstName} ${passenger.lastName}, seat: $seat, price: $ticketPrice',
+          );
+        }
+      }
 
       emit(PaymentSuccess());
     } catch (e) {
