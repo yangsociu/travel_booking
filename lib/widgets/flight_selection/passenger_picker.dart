@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:booking_app/utils/app_colors.dart';
-import 'package:booking_app/widgets/common/custom_card.dart';
-import 'package:booking_app/widgets/common/icon_text_row.dart';
 
 class PassengerPicker extends StatelessWidget {
   final int passengerCount;
@@ -17,20 +15,39 @@ class PassengerPicker extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: CustomCard(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: IconTextRow(
-          iconPath:
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        decoration: BoxDecoration(
+          color: AppColors.grey_2,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: AppColors.grey.withOpacity(0.3)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.asset(
               'assets/icons/date_selection_screen/fluent_guest-add-24-filled.png',
-          text: 'Số khách: $passengerCount',
-          textStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            fontSize: 16,
-            color: AppColors.black,
-          ),
-          iconWidth: 24,
-          iconHeight: 24,
-          iconColor: AppColors.black,
-          spacing: 10,
+              width: 22,
+              height: 22,
+              color: AppColors.primaryColor,
+            ),
+            const SizedBox(width: 10),
+            Text(
+              '$passengerCount',
+              style: const TextStyle(
+                fontFamily: 'Montserrat',
+                fontSize: 16,
+                color: AppColors.black,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(width: 10),
+            const Icon(
+              Icons.arrow_drop_down,
+              color: AppColors.primaryColor,
+              size: 24,
+            ),
+          ],
         ),
       ),
     );

@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:booking_app/utils/app_colors.dart';
-import 'package:booking_app/widgets/common/custom_card.dart';
-import 'package:booking_app/widgets/common/icon_text_row.dart';
 
 class CitySelector extends StatelessWidget {
   final String label;
@@ -19,21 +17,42 @@ class CitySelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isSelected = selectedCity != null;
     return GestureDetector(
       onTap: onTap,
-      child: CustomCard(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: IconTextRow(
-          iconPath: iconPath,
-          text: selectedCity ?? label,
-          textStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            fontSize: 16,
-            color: AppColors.black,
-          ),
-          iconWidth: 24,
-          iconHeight: 24,
-          iconColor: AppColors.black,
-          spacing: 10,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        decoration: BoxDecoration(
+          color: AppColors.grey_2,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: AppColors.grey.withOpacity(0.3)),
+        ),
+        child: Row(
+          children: [
+            Image.asset(
+              iconPath,
+              width: 22,
+              height: 22,
+              color: AppColors.primaryColor,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                selectedCity ?? label,
+                style: TextStyle(
+                  fontFamily: 'Montserrat',
+                  fontSize: isSelected ? 16 : 14,
+                  color: isSelected ? AppColors.black : AppColors.primaryColor,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                ),
+              ),
+            ),
+            const Icon(
+              Icons.arrow_drop_down,
+              color: AppColors.primaryColor,
+              size: 24,
+            ),
+          ],
         ),
       ),
     );

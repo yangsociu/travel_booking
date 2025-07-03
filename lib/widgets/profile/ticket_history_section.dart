@@ -1,4 +1,3 @@
-//ticket_history_section.dart
 import 'package:flutter/material.dart';
 import 'package:booking_app/models/ticket.dart';
 import 'package:booking_app/services/flight_service.dart';
@@ -89,7 +88,7 @@ class TicketHistorySection extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Hành khách: ${ticket.passenger.firstName} ${ticket.passenger.lastName}',
+                        'Hành khách: ${ticket.passenger.fullName}',
                         style: const TextStyle(
                           fontFamily: 'Montserrat',
                           fontSize: 14,

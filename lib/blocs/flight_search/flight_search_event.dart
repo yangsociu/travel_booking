@@ -48,3 +48,11 @@ class ShowPassengerPicker extends FlightSearchEvent {
 }
 
 class SearchFlights extends FlightSearchEvent {}
+
+// Thêm sự kiện mới để hoán đổi điểm đi và điểm đến
+class SwapCities extends FlightSearchEvent {
+  const SwapCities();
+
+  @override
+  List<Object> get props => []; // Corrected to return List<Object>
+}

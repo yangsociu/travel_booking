@@ -3,7 +3,6 @@ import 'package:booking_app/models/flight_model.dart';
 import 'package:booking_app/models/passenger.dart';
 import 'package:booking_app/routes/app_routes.dart';
 import 'package:booking_app/utils/app_colors.dart';
-import 'package:booking_app/widgets/common/custom_button.dart';
 import 'package:intl/intl.dart';
 
 class PaymentSuccessScreen extends StatefulWidget {
@@ -201,15 +200,44 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
               const SizedBox(height: 20),
               // Nút Trở về
               Center(
-                child: CustomButton(
-                  text: 'Trở về',
-                  onPressed: () {
-                    Navigator.pushNamedAndRemoveUntil(
-                      context,
-                      AppRoutes.home,
-                      (route) => false,
-                    );
-                  },
+                child: Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF1976D2), Color(0xFF42A5F5)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pushNamedAndRemoveUntil(
+                        context,
+                        AppRoutes.home,
+                        (route) => false,
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      foregroundColor: AppColors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: const Text(
+                      'Trở về',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: 'Montserrat',
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.white,
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -273,7 +301,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Hành khách: ${passenger.firstName} ${passenger.lastName}',
+                      'Hành khách: ${passenger.fullName}',
                       style: const TextStyle(
                         color: AppColors.black,
                         fontFamily: 'Montserrat',

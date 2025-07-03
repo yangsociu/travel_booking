@@ -6,11 +6,13 @@ import 'package:intl/intl.dart';
 class TicketListItem extends StatelessWidget {
   final Ticket ticket;
   final VoidCallback onDelete;
+  final GlobalKey<ScaffoldMessengerState>? scaffoldMessengerKey;
 
   const TicketListItem({
     super.key,
     required this.ticket,
     required this.onDelete,
+    this.scaffoldMessengerKey,
   });
 
   @override
@@ -76,7 +78,7 @@ class TicketListItem extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Hành khách: ${ticket.passenger.firstName} ${ticket.passenger.lastName}',
+            'Hành khách: ${ticket.passenger.fullName}',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               fontSize: 14,
               color: AppColors.grey,

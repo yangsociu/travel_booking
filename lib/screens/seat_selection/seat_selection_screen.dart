@@ -8,7 +8,7 @@ import 'package:booking_app/models/passenger.dart';
 import 'package:booking_app/routes/app_routes.dart';
 import 'package:booking_app/services/flight_service.dart';
 import 'package:booking_app/utils/app_colors.dart';
-import 'package:intl/intl.dart';
+import 'package:booking_app/widgets/seat/seat_grid.dart';
 
 class SeatSelectionScreen extends StatelessWidget {
   final FlightModel flight;
@@ -43,17 +43,17 @@ class SeatSelectionScreen extends StatelessWidget {
           title: const Text(
             'Chọn chỗ ngồi',
             style: TextStyle(
-              color: AppColors.black,
+              color: AppColors.white,
               fontFamily: 'Montserrat',
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
+              fontSize: 24,
+              fontWeight: FontWeight.w700,
             ),
           ),
           centerTitle: true,
-          backgroundColor: AppColors.grey_2,
+          backgroundColor: AppColors.primaryColor,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: AppColors.black),
+            icon: const Icon(Icons.arrow_back, color: AppColors.white),
             onPressed: () => Navigator.pop(context),
           ),
         ),
@@ -77,20 +77,43 @@ class SeatSelectionScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Chuyến đi
+                  // Thông tin chuyến đi
                   _buildFlightInfo(context, flight, selectedSeats, 'Chuyến đi'),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 8),
                   Text(
-                    'Đã chọn: ${selectedSeats.length}/${passengers.length} ghế (Chuyến đi)',
+                    'Đã chọn: ${selectedSeats.length}/${passengers.length} ghế',
                     style: const TextStyle(
                       color: AppColors.black,
                       fontFamily: 'Montserrat',
-                      fontSize: 16,
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),
+                    textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 20),
-                  _buildSeatGrid(context, seats, selectedSeats, false),
+                  SeatGridWidget(
+                    seats: seats,
+                    selectedSeats: selectedSeats,
+                    passengers: passengers,
+                    isReturnFlight: false,
+                    flight: flight,
+                    onSeatSelected: (seat) {
+                      if (selectedSeats.length < passengers.length ||
+                          selectedSeats.contains(seat)) {
+                        context.read<SeatBloc>().add(
+                          SelectSeat(seat, isReturnFlight: false),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Bạn đã chọn đủ ${passengers.length} ghế',
+                            ),
+                          ),
+                        );
+                      }
+                    },
+                  ),
                   if (returnFlight != null) ...[
                     const SizedBox(height: 20),
                     _buildFlightInfo(
@@ -99,90 +122,123 @@ class SeatSelectionScreen extends StatelessWidget {
                       returnSelectedSeats,
                       'Chuyến về',
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 8),
                     Text(
-                      'Đã chọn: ${returnSelectedSeats.length}/${passengers.length} ghế (Chuyến về)',
+                      'Đã chọn: ${returnSelectedSeats.length}/${passengers.length} ghế',
                       style: const TextStyle(
                         color: AppColors.black,
                         fontFamily: 'Montserrat',
-                        fontSize: 16,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
+                      textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 20),
-                    _buildSeatGrid(
-                      context,
-                      returnSeats,
-                      returnSelectedSeats,
-                      true,
+                    SeatGridWidget(
+                      seats: returnSeats,
+                      selectedSeats: returnSelectedSeats,
+                      passengers: passengers,
+                      isReturnFlight: true,
+                      flight: returnFlight!,
+                      onSeatSelected: (seat) {
+                        if (returnSelectedSeats.length < passengers.length ||
+                            returnSelectedSeats.contains(seat)) {
+                          context.read<SeatBloc>().add(
+                            SelectSeat(seat, isReturnFlight: true),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Bạn đã chọn đủ ${passengers.length} ghế',
+                              ),
+                            ),
+                          );
+                        }
+                      },
                     ),
                   ],
                   const SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed:
-                        (selectedSeats.length == passengers.length &&
-                                (returnFlight == null ||
-                                    returnSelectedSeats.length ==
-                                        passengers.length))
-                            ? () {
-                              final totalPrice =
-                                  selectedSeats.fold<double>(0, (sum, seat) {
-                                    return sum +
-                                        (int.parse(seat[0]) <= 4
-                                            ? flight.price * 1.5
-                                            : flight.price);
-                                  }) +
-                                  (returnFlight != null
-                                      ? returnSelectedSeats.fold<double>(0, (
+                  Center(
+                    child: Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF1976D2), Color(0xFF42A5F5)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: ElevatedButton(
+                        onPressed:
+                            (selectedSeats.length == passengers.length &&
+                                    (returnFlight == null ||
+                                        returnSelectedSeats.length ==
+                                            passengers.length))
+                                ? () {
+                                  final totalPrice =
+                                      selectedSeats.fold<double>(0, (
                                         sum,
                                         seat,
                                       ) {
                                         return sum +
                                             (int.parse(seat[0]) <= 4
-                                                ? returnFlight!.price * 1.5
-                                                : returnFlight!.price);
-                                      })
-                                      : 0);
-                              print(
-                                'Navigating to payment with ${passengers.length} passengers, seats: $selectedSeats, returnSeats: $returnSelectedSeats',
-                              );
-                              Navigator.pushNamed(
-                                context,
-                                AppRoutes.payment,
-                                arguments: {
-                                  'flight': flight,
-                                  'returnFlight': returnFlight,
-                                  'passengers': passengers,
-                                  'selectedSeats': selectedSeats,
-                                  'returnSelectedSeats': returnSelectedSeats,
-                                  'phoneNumber': phoneNumber,
-                                  'email': email,
-                                  'ticketPrice': _formatPrice(totalPrice),
-                                  'duration': _calculateDuration(
-                                    flight.departureTime,
-                                    flight.arrivalTime,
-                                  ),
-                                },
-                              );
-                            }
-                            : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primaryColor,
-                      foregroundColor: AppColors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 32,
-                        vertical: 12,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Text(
-                      'Xác nhận',
-                      style: TextStyle(
-                        fontFamily: 'Montserrat',
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                                                ? flight.price * 1.5
+                                                : flight.price);
+                                      }) +
+                                      (returnFlight != null
+                                          ? returnSelectedSeats.fold<double>(
+                                            0,
+                                            (sum, seat) {
+                                              return sum +
+                                                  (int.parse(seat[0]) <= 4
+                                                      ? returnFlight!.price *
+                                                          1.5
+                                                      : returnFlight!.price);
+                                            },
+                                          )
+                                          : 0);
+                                  Navigator.pushNamed(
+                                    context,
+                                    AppRoutes.payment,
+                                    arguments: {
+                                      'flight': flight,
+                                      'returnFlight': returnFlight,
+                                      'passengers': passengers,
+                                      'selectedSeats': selectedSeats,
+                                      'returnSelectedSeats':
+                                          returnSelectedSeats,
+                                      'phoneNumber': phoneNumber,
+                                      'email': email,
+                                      'ticketPrice': _formatPrice(totalPrice),
+                                      'duration': _calculateDuration(
+                                        flight.departureTime,
+                                        flight.arrivalTime,
+                                      ),
+                                    },
+                                  );
+                                }
+                                : null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          foregroundColor: AppColors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 0,
+                        ),
+                        child: const Text(
+                          'Xác nhận',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontFamily: 'Montserrat',
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.white,
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -205,10 +261,26 @@ class SeatSelectionScreen extends StatelessWidget {
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
         color: AppColors.primaryColor,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          Column(
+            children: List.generate(passengers.length, (index) {
+              return Text(
+                passengers[index].fullName,
+                style: const TextStyle(
+                  color: AppColors.white,
+                  fontFamily: 'Montserrat',
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
+                textAlign: TextAlign.center,
+              );
+            }),
+          ),
+          const SizedBox(height: 8),
           Text(
             title,
             style: const TextStyle(
@@ -219,65 +291,8 @@ class SeatSelectionScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                flight.departureCode,
-                style: const TextStyle(
-                  color: AppColors.white,
-                  fontFamily: 'Montserrat',
-                  fontSize: 24,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              Expanded(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Image.asset(
-                      'assets/icons/flight_selection_screen/ph_dot-duotone.png',
-                      width: 28,
-                      height: 28,
-                      color: AppColors.white,
-                    ),
-                    Container(height: 2, width: 80, color: AppColors.white),
-                    Image.asset(
-                      'assets/icons/flight_selection_screen/weui_location-outlined.png',
-                      width: 16,
-                      height: 16,
-                      color: AppColors.white,
-                    ),
-                  ],
-                ),
-              ),
-              Text(
-                flight.arrivalCode,
-                style: const TextStyle(
-                  color: AppColors.white,
-                  fontFamily: 'Montserrat',
-                  fontSize: 24,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
           Text(
-            DateFormat('HH:mm dd MMM yyyy').format(flight.departureTime),
-            style: const TextStyle(
-              color: AppColors.white,
-              fontFamily: 'Montserrat',
-              fontSize: 14,
-              fontWeight: FontWeight.w400,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
-          const Divider(color: AppColors.white, thickness: 1),
-          const SizedBox(height: 8),
-          Text(
-            '${passengers.length} hành khách',
+            '${flight.departureCity} (${flight.departureCode}) -> ${flight.arrivalCity} (${flight.arrivalCode}) (${flight.id})',
             style: const TextStyle(
               color: AppColors.white,
               fontFamily: 'Montserrat',
@@ -289,138 +304,6 @@ class SeatSelectionScreen extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  Widget _buildSeatGrid(
-    BuildContext context,
-    Map<String, bool> seats,
-    List<String> selectedSeats,
-    bool isReturnFlight,
-  ) {
-    return Container(
-      width: 324,
-      height: _calculateTotalHeight(),
-      padding: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        color: AppColors.grey_2,
-        image: const DecorationImage(
-          image: AssetImage('assets/images/tauuu.png'),
-          fit: BoxFit.cover,
-        ),
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.grey.withOpacity(0.3),
-            blurRadius: 4,
-            offset: const Offset(2, 3),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          const SizedBox(height: 32),
-          const Text(
-            'Hạng thương gia',
-            style: TextStyle(
-              color: AppColors.black,
-              fontFamily: 'Montserrat',
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            _formatPrice(
-              (isReturnFlight ? returnFlight?.price : flight.price)! * 1.5,
-            ),
-            style: const TextStyle(
-              color: AppColors.primaryColor,
-              fontFamily: 'Montserrat',
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 12),
-          for (var row in _businessSeats)
-            _buildSeatRow(context, row, seats, selectedSeats, isReturnFlight),
-          const SizedBox(height: 20),
-          const Text(
-            'Hạng phổ thông',
-            style: TextStyle(
-              color: AppColors.black,
-              fontFamily: 'Montserrat',
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            _formatPrice(
-              (isReturnFlight ? returnFlight?.price : flight.price)!,
-            ),
-            style: const TextStyle(
-              color: AppColors.primaryColor,
-              fontFamily: 'Montserrat',
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 12),
-          for (var row in _economySeats)
-            _buildSeatRow(context, row, seats, selectedSeats, isReturnFlight),
-        ],
-      ),
-    );
-  }
-
-  final List<List<String>> _businessSeats = [
-    ['1A', '1B', '1C', '1D'],
-    ['2A', '2B', '2C', '2D'],
-    ['3A', '3B', '3C', '3D'],
-    ['4A', '4B', '4C', '4D'],
-  ];
-  final List<List<String>> _economySeats = [
-    ['5A', '5B', '5C', '5D'],
-    ['6A', '6B', '6C', '6D'],
-    ['7A', '7B', '7C', '7D'],
-    ['8A', '8B', '8C', '8D'],
-    ['9A', '9B', '9C', '9D'],
-  ];
-
-  double _calculateTotalHeight() {
-    const double seatHeight = 40;
-    const double seatPadding = 4;
-    const double sectionSpacing = 20;
-    const double titleHeight = 16;
-    const double priceHeight = 20;
-    const double titleSpacing = 4;
-    const double seatSectionSpacing = 12;
-    const double topPadding = 32;
-    const double containerPadding = 16;
-    const double bufferHeight = 32;
-    final double businessHeight =
-        _businessSeats.length * (seatHeight + seatPadding * 2) +
-        titleHeight +
-        priceHeight +
-        titleSpacing +
-        seatSectionSpacing;
-    final double economyHeight =
-        _economySeats.length * (seatHeight + seatPadding * 2) +
-        titleHeight +
-        priceHeight +
-        titleSpacing +
-        seatSectionSpacing;
-    return businessHeight +
-        economyHeight +
-        sectionSpacing +
-        topPadding +
-        containerPadding * 2 +
-        bufferHeight;
   }
 
   String _formatPrice(double price) {
@@ -432,77 +315,5 @@ class SeatSelectionScreen extends StatelessWidget {
     final hours = duration.inHours;
     final minutes = duration.inMinutes % 60;
     return '${hours}h ${minutes}m';
-  }
-
-  Widget _buildSeatRow(
-    BuildContext context,
-    List<String> row,
-    Map<String, bool> seats,
-    List<String> selectedSeats,
-    bool isReturnFlight,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children:
-            row.map((seat) {
-              final isBooked = seats[seat] ?? false;
-              final isSelected = selectedSeats.contains(seat);
-              return GestureDetector(
-                onTap:
-                    isBooked
-                        ? null
-                        : () {
-                          if (selectedSeats.length < passengers.length ||
-                              isSelected) {
-                            context.read<SeatBloc>().add(
-                              SelectSeat(seat, isReturnFlight: isReturnFlight),
-                            );
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Bạn đã chọn đủ ${passengers.length} ghế',
-                                ),
-                              ),
-                            );
-                          }
-                        },
-                child: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color:
-                        isBooked
-                            ? AppColors.grey
-                            : (isSelected ? AppColors.white : AppColors.grey_2),
-                    border:
-                        isSelected
-                            ? Border.all(color: AppColors.grey_2, width: 2)
-                            : null,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Center(
-                    child: Text(
-                      seat[1],
-                      style: TextStyle(
-                        color:
-                            isBooked
-                                ? AppColors.white
-                                : (isSelected
-                                    ? AppColors.black
-                                    : AppColors.black.withOpacity(0.7)),
-                        fontFamily: 'Montserrat',
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            }).toList(),
-      ),
-    );
   }
 }

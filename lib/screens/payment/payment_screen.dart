@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:booking_app/blocs/payment/payment_bloc.dart';
@@ -8,8 +9,7 @@ import 'package:booking_app/models/passenger.dart';
 import 'package:booking_app/routes/app_routes.dart';
 import 'package:booking_app/services/flight_service.dart';
 import 'package:booking_app/utils/app_colors.dart';
-import 'package:booking_app/widgets/common/custom_text_field.dart';
-import 'package:booking_app/widgets/common/custom_button.dart';
+import 'package:booking_app/widgets/payment/payment_form.dart';
 import 'package:intl/intl.dart';
 
 class PaymentScreen extends StatefulWidget {
@@ -41,21 +41,7 @@ class PaymentScreen extends StatefulWidget {
 }
 
 class _PaymentScreenState extends State<PaymentScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _cardNumberController = TextEditingController();
-  final _cardHolderController = TextEditingController();
-  final _expiryDateController = TextEditingController();
-  final _cvvController = TextEditingController();
-  String? _cardType;
-
-  @override
-  void dispose() {
-    _cardNumberController.dispose();
-    _cardHolderController.dispose();
-    _expiryDateController.dispose();
-    _cvvController.dispose();
-    super.dispose();
-  }
+  String? _selectedPaymentMethod;
 
   double _calculateTotalPrice() {
     double total = 0;
@@ -122,19 +108,19 @@ class _PaymentScreenState extends State<PaymentScreen> {
           backgroundColor: AppColors.grey_2,
           appBar: AppBar(
             title: const Text(
-              'Thanh toán',
+              'Thanh Toán',
               style: TextStyle(
-                color: AppColors.black,
+                color: AppColors.white,
                 fontFamily: 'Montserrat',
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
+                fontSize: 24,
+                fontWeight: FontWeight.w700,
               ),
             ),
             centerTitle: true,
-            backgroundColor: AppColors.grey_2,
+            backgroundColor: AppColors.primaryColor,
             elevation: 0,
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: AppColors.black),
+              icon: const Icon(Icons.arrow_back, color: AppColors.white),
               onPressed: () => Navigator.pop(context),
             ),
           ),
@@ -143,33 +129,69 @@ class _PaymentScreenState extends State<PaymentScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Chuyến đi
-                _buildFlightInfo(
-                  context,
-                  widget.flight,
-                  widget.selectedSeats,
-                  'Chuyến đi',
+                TicketInfoWidget(
+                  flight: widget.flight,
+                  returnFlight: widget.returnFlight,
+                  passengers: widget.passengers,
+                  selectedSeats: widget.selectedSeats,
+                  returnSelectedSeats: widget.returnSelectedSeats,
+                  phoneNumber: widget.phoneNumber,
+                  email: widget.email,
                 ),
-                if (widget.returnFlight != null) ...[
-                  const SizedBox(height: 20),
-                  _buildFlightInfo(
-                    context,
-                    widget.returnFlight!,
-                    widget.returnSelectedSeats,
-                    'Chuyến về',
-                  ),
-                ],
                 const SizedBox(height: 20),
                 const Text(
-                  'Thông tin thanh toán',
+                  'Phương thức thanh toán',
                   style: TextStyle(
                     color: AppColors.primaryColor,
                     fontFamily: 'Montserrat',
-                    fontSize: 24,
+                    fontSize: 20,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
+                PaymentMethodTile(
+                  icon: Icons.credit_card,
+                  title: 'Thanh toán qua thẻ',
+                  isSelected: _selectedPaymentMethod == 'Card',
+                  onTap: () {
+                    setState(() {
+                      _selectedPaymentMethod = 'Card';
+                    });
+                  },
+                ),
+                PaymentMethodTile(
+                  icon: Icons.account_balance,
+                  title: 'Chuyển khoản ngân hàng',
+                  isSelected: _selectedPaymentMethod == 'Bank',
+                  onTap: () {
+                    setState(() {
+                      _selectedPaymentMethod = 'Bank';
+                    });
+                  },
+                ),
+                PaymentMethodTile(
+                  icon: Icons.account_balance_wallet,
+                  title: 'Ví điện tử MoMo',
+                  isSelected: _selectedPaymentMethod == 'MoMo',
+                  onTap: () {
+                    setState(() {
+                      _selectedPaymentMethod = 'MoMo';
+                    });
+                  },
+                ),
+                if (_selectedPaymentMethod == 'Card') ...[
+                  const SizedBox(height: 20),
+                  PaymentForm(
+                    flight: widget.flight,
+                    returnFlight: widget.returnFlight,
+                    passengers: widget.passengers,
+                    selectedSeats: widget.selectedSeats,
+                    returnSelectedSeats: widget.returnSelectedSeats,
+                    phoneNumber: widget.phoneNumber,
+                    email: widget.email,
+                  ),
+                ],
+                const SizedBox(height: 20),
                 Container(
                   padding: const EdgeInsets.all(16.0),
                   decoration: BoxDecoration(
@@ -183,118 +205,121 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       ),
                     ],
                   ),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        DropdownButtonFormField<String>(
-                          decoration: const InputDecoration(
-                            labelText: 'Loại thẻ',
-                            labelStyle: TextStyle(
-                              color: AppColors.black,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Chi tiết thanh toán',
+                        style: TextStyle(
+                          color: AppColors.primaryColor,
+                          fontFamily: 'Montserrat',
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Tạm tính:',
+                            style: TextStyle(
+                              color: AppColors.primaryColor,
                               fontFamily: 'Montserrat',
+                              fontSize: 16,
                             ),
-                            border: OutlineInputBorder(),
                           ),
-                          items:
-                              ['Visa', 'MasterCard', 'American Express'].map((
-                                String type,
-                              ) {
-                                return DropdownMenuItem<String>(
-                                  value: type,
-                                  child: Text(
-                                    type,
-                                    style: const TextStyle(
-                                      color: AppColors.black,
-                                      fontFamily: 'Montserrat',
-                                    ),
+                          Text(
+                            _formatPrice(_calculateTotalPrice()),
+                            style: const TextStyle(
+                              color: AppColors.primaryColor,
+                              fontFamily: 'Montserrat',
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Tổng thanh toán:',
+                            style: TextStyle(
+                              color: AppColors.primaryColor,
+                              fontFamily: 'Montserrat',
+                              fontSize: 16,
+                            ),
+                          ),
+                          Text(
+                            _formatPrice(_calculateTotalPrice()),
+                            style: const TextStyle(
+                              color: AppColors.primaryColor,
+                              fontFamily: 'Montserrat',
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF1976D2), Color(0xFF42A5F5)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: ElevatedButton(
+                    onPressed:
+                        _selectedPaymentMethod == null
+                            ? null
+                            : () {
+                              if (_selectedPaymentMethod != 'Card') {
+                                context.read<PaymentBloc>().add(
+                                  StartPayment(
+                                    flight: widget.flight,
+                                    returnFlight: widget.returnFlight,
+                                    passengers: widget.passengers,
+                                    selectedSeats: widget.selectedSeats,
+                                    returnSelectedSeats:
+                                        widget.returnSelectedSeats,
+                                    phoneNumber: widget.phoneNumber,
+                                    email: widget.email,
+                                    cardType: '',
+                                    cardNumber: '',
+                                    cardHolder: '',
+                                    expiryDate: '',
+                                    cvv: '',
                                   ),
                                 );
-                              }).toList(),
-                          onChanged: (value) => _cardType = value,
-                          validator:
-                              (value) =>
-                                  value == null
-                                      ? 'Vui lòng chọn loại thẻ'
-                                      : null,
-                        ),
-                        const SizedBox(height: 12),
-                        CustomTextField(
-                          controller: _cardNumberController,
-                          label: 'Số thẻ',
-                          keyboardType: TextInputType.number,
-                          obscureText: false,
-                        ),
-                        const SizedBox(height: 12),
-                        CustomTextField(
-                          controller: _cardHolderController,
-                          label: 'Tên chủ thẻ',
-                          keyboardType: TextInputType.text,
-                          obscureText: false,
-                        ),
-                        const SizedBox(height: 12),
-                        CustomTextField(
-                          controller: _expiryDateController,
-                          label: 'Ngày hết hạn (MM/YY)',
-                          keyboardType: TextInputType.datetime,
-                          obscureText: false,
-                        ),
-                        const SizedBox(height: 12),
-                        CustomTextField(
-                          controller: _cvvController,
-                          label: 'Mã CVV',
-                          keyboardType: TextInputType.number,
-                          obscureText: true,
-                        ),
-                        const SizedBox(height: 20),
-                        Text(
-                          'Tổng tiền: ${widget.ticketPrice}',
-                          style: const TextStyle(
-                            color: AppColors.primaryColor,
-                            fontFamily: 'Montserrat',
-                            fontSize: 20,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        BlocBuilder<PaymentBloc, PaymentState>(
-                          builder: (context, state) {
-                            final isLoading = state is PaymentLoading;
-                            return CustomButton(
-                              text: isLoading ? 'Đang xử lý...' : 'Thanh toán',
-                              onPressed:
-                                  isLoading
-                                      ? null
-                                      : () {
-                                        if (_formKey.currentState!.validate()) {
-                                          context.read<PaymentBloc>().add(
-                                            StartPayment(
-                                              flight: widget.flight,
-                                              returnFlight: widget.returnFlight,
-                                              passengers: widget.passengers,
-                                              selectedSeats:
-                                                  widget.selectedSeats,
-                                              returnSelectedSeats:
-                                                  widget.returnSelectedSeats,
-                                              phoneNumber: widget.phoneNumber,
-                                              email: widget.email,
-                                              cardType: _cardType ?? '',
-                                              cardNumber:
-                                                  _cardNumberController.text,
-                                              cardHolder:
-                                                  _cardHolderController.text,
-                                              expiryDate:
-                                                  _expiryDateController.text,
-                                              cvv: _cvvController.text,
-                                            ),
-                                          );
-                                        }
-                                      },
-                            );
-                          },
-                        ),
-                      ],
+                              }
+                            },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      foregroundColor: AppColors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: const Text(
+                      'Xác nhận',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: 'Montserrat',
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.white,
+                      ),
                     ),
                   ),
                 ),
@@ -305,13 +330,30 @@ class _PaymentScreenState extends State<PaymentScreen> {
       ),
     );
   }
+}
 
-  Widget _buildFlightInfo(
-    BuildContext context,
-    FlightModel flight,
-    List<String> selectedSeats,
-    String title,
-  ) {
+class TicketInfoWidget extends StatelessWidget {
+  final FlightModel flight;
+  final FlightModel? returnFlight;
+  final List<Passenger> passengers;
+  final List<String> selectedSeats;
+  final List<String> returnSelectedSeats;
+  final String phoneNumber;
+  final String email;
+
+  const TicketInfoWidget({
+    super.key,
+    required this.flight,
+    this.returnFlight,
+    required this.passengers,
+    required this.selectedSeats,
+    required this.returnSelectedSeats,
+    required this.phoneNumber,
+    required this.email,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
@@ -319,90 +361,212 @@ class _PaymentScreenState extends State<PaymentScreen> {
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: const TextStyle(
-              color: AppColors.white,
-              fontFamily: 'Montserrat',
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 8),
+          // Thông tin chuyến đi
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                flight.departureCode,
-                style: const TextStyle(
-                  color: AppColors.white,
-                  fontFamily: 'Montserrat',
-                  fontSize: 24,
-                  fontWeight: FontWeight.w600,
-                ),
+              const Icon(
+                CupertinoIcons.airplane,
+                color: AppColors.white,
+                size: 24,
               ),
+              const SizedBox(width: 8),
               Expanded(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Image.asset(
-                      'assets/icons/flight_selection_screen/ph_dot-duotone.png',
-                      width: 28,
-                      height: 28,
-                      color: AppColors.white,
+                    Text(
+                      '${flight.departureCity} (${flight.departureCode}) -> ${flight.arrivalCity} (${flight.arrivalCode})',
+                      style: const TextStyle(
+                        color: AppColors.white,
+                        fontFamily: 'Montserrat',
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                    Container(width: 80, height: 2, color: AppColors.white),
-                    Image.asset(
-                      'assets/icons/flight_selection_screen/weui_location-outlined.png',
-                      width: 16,
-                      height: 16,
-                      color: AppColors.white,
+                    const SizedBox(height: 4),
+                    Text(
+                      'Thời gian đặt: ${DateFormat('HH:mm dd MMM yyyy').format(DateTime.now())}',
+                      style: const TextStyle(
+                        color: AppColors.white,
+                        fontFamily: 'Montserrat',
+                        fontSize: 14,
+                      ),
+                    ),
+                    Text(
+                      'Thời gian bay: ${DateFormat('HH:mm dd MMM yyyy').format(flight.departureTime)}',
+                      style: const TextStyle(
+                        color: AppColors.white,
+                        fontFamily: 'Montserrat',
+                        fontSize: 14,
+                      ),
                     ),
                   ],
                 ),
               ),
-              Text(
-                flight.arrivalCode,
-                style: const TextStyle(
-                  color: AppColors.white,
-                  fontFamily: 'Montserrat',
-                  fontSize: 24,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
             ],
           ),
+          // Thông tin chuyến về (nếu có)
+          if (returnFlight != null) ...[
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                const Icon(
+                  CupertinoIcons.airplane,
+                  color: AppColors.white,
+                  size: 24,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Chuyến về: ${returnFlight!.departureCity} (${returnFlight!.departureCode}) -> ${returnFlight!.arrivalCity} (${returnFlight!.arrivalCode})',
+                        style: const TextStyle(
+                          color: AppColors.white,
+                          fontFamily: 'Montserrat',
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Thời gian đặt: ${DateFormat('HH:mm dd MMM yyyy').format(DateTime.now())}',
+                        style: const TextStyle(
+                          color: AppColors.white,
+                          fontFamily: 'Montserrat',
+                          fontSize: 14,
+                        ),
+                      ),
+                      Text(
+                        'Thời gian bay: ${DateFormat('HH:mm dd MMM yyyy').format(returnFlight!.departureTime)}',
+                        style: const TextStyle(
+                          color: AppColors.white,
+                          fontFamily: 'Montserrat',
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+          const SizedBox(height: 16),
+          const Text(
+            'Hành khách & ghế:',
+            style: TextStyle(
+              color: AppColors.white,
+              fontFamily: 'Montserrat',
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
           const SizedBox(height: 8),
+          Column(
+            children: List.generate(
+              passengers.length,
+              (index) => Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Chuyến đi: ${passengers[index].fullName} (${selectedSeats[index]})',
+                    style: const TextStyle(
+                      color: AppColors.white,
+                      fontFamily: 'Montserrat',
+                      fontSize: 14,
+                    ),
+                  ),
+                  if (returnFlight != null &&
+                      index < returnSelectedSeats.length)
+                    Text(
+                      'Chuyến về: ${passengers[index].fullName} (${returnSelectedSeats[index]})',
+                      style: const TextStyle(
+                        color: AppColors.white,
+                        fontFamily: 'Montserrat',
+                        fontSize: 14,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
           Text(
-            DateFormat('HH:mm dd MMM yyyy').format(flight.departureTime),
+            'Liên hệ: $phoneNumber',
             style: const TextStyle(
               color: AppColors.white,
               fontFamily: 'Montserrat',
               fontSize: 14,
-              fontWeight: FontWeight.w400,
             ),
-            textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 8),
-          const Divider(color: AppColors.white, thickness: 1),
-          const SizedBox(height: 8),
-          Column(
-            children: List.generate(
-              widget.passengers.length,
-              (index) => Text(
-                'Hành khách: ${widget.passengers[index].firstName} ${widget.passengers[index].lastName} - Ghế: ${index < selectedSeats.length ? selectedSeats[index] : 'Chưa chọn'}',
-                style: const TextStyle(
-                  color: AppColors.white,
-                  fontFamily: 'Montserrat',
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
-                ),
-                textAlign: TextAlign.center,
-              ),
+          Text(
+            'Email: $email',
+            style: const TextStyle(
+              color: AppColors.white,
+              fontFamily: 'Montserrat',
+              fontSize: 14,
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class PaymentMethodTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const PaymentMethodTile({
+    super.key,
+    required this.icon,
+    required this.title,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16.0),
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(12),
+          border:
+              isSelected
+                  ? Border.all(color: AppColors.primaryColor, width: 2)
+                  : null,
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.grey.withOpacity(0.3),
+              blurRadius: 4,
+              offset: const Offset(2, 3),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: AppColors.primaryColor, size: 24),
+            const SizedBox(width: 12),
+            Text(
+              title,
+              style: const TextStyle(
+                color: AppColors.primaryColor,
+                fontFamily: 'Montserrat',
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

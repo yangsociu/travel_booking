@@ -1,4 +1,3 @@
-// payment_bloc.dart
 import 'package:booking_app/models/passenger.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:booking_app/blocs/payment/payment_event.dart';
@@ -37,7 +36,6 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
         print('Booked seat: $seat for flight ${event.flight.documentId}');
       }
 
-      // Lưu vé
       // Lưu vé cho chuyến đi
       for (int i = 0; i < event.passengers.length; i++) {
         final passenger = event.passengers[i];
@@ -49,9 +47,7 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
         await flightService.bookTicket(
           flight: event.flight,
           passenger: Passenger(
-            firstName: passenger.firstName,
-            lastName: passenger.lastName,
-            idNumber: passenger.idNumber,
+            fullName: passenger.fullName,
             birthYear: passenger.birthYear,
             gender: passenger.gender,
             phoneNumber: event.phoneNumber,
@@ -63,9 +59,10 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
           email: event.email,
         );
         print(
-          'Booked ticket for passenger ${passenger.firstName} ${passenger.lastName}, seat: $seat, price: $ticketPrice',
+          'Booked ticket for passenger ${passenger.fullName}, seat: $seat, price: $ticketPrice',
         );
       }
+
       // Lưu vé cho chuyến về (nếu có)
       if (event.returnFlight != null) {
         for (int i = 0; i < event.passengers.length; i++) {
@@ -78,9 +75,7 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
           await flightService.bookTicket(
             flight: event.returnFlight!,
             passenger: Passenger(
-              firstName: passenger.firstName,
-              lastName: passenger.lastName,
-              idNumber: passenger.idNumber,
+              fullName: passenger.fullName,
               birthYear: passenger.birthYear,
               gender: passenger.gender,
               phoneNumber: event.phoneNumber,
@@ -92,7 +87,7 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
             email: event.email,
           );
           print(
-            'Booked ticket for passenger ${passenger.firstName} ${passenger.lastName}, seat: $seat, price: $ticketPrice',
+            'Booked ticket for passenger ${passenger.fullName}, seat: $seat, price: $ticketPrice',
           );
         }
       }

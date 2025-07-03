@@ -1,5 +1,3 @@
-// blocs/flight_search/flight_search_bloc.dart
-// BLoC xử lý logic tìm kiếm chuyến bay
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:booking_app/services/flight_service.dart';
 import 'package:booking_app/blocs/flight_search/flight_search_event.dart';
@@ -15,13 +13,22 @@ class FlightSearchBloc extends Bloc<FlightSearchEvent, FlightSearchState> {
     on<ShowCityPicker>(_onShowCityPicker);
     on<ShowPassengerPicker>(_onShowPassengerPicker);
     on<SearchFlights>(_onSearchFlights);
+    on<SwapCities>(_onSwapCities); // Explicitly ensure handler is registered
   }
 
   void _onToggleRoundTrip(
     ToggleRoundTrip event,
     Emitter<FlightSearchState> emit,
   ) {
-    emit(state.copyWith(isRoundTrip: event.isRoundTrip));
+    emit(
+      state.copyWith(
+        isRoundTrip: event.isRoundTrip,
+        returnDate:
+            event.isRoundTrip
+                ? state.returnDate
+                : null, // Reset returnDate for one-way
+      ),
+    );
   }
 
   void _onSelectDate(SelectDate event, Emitter<FlightSearchState> emit) {
@@ -61,5 +68,17 @@ class FlightSearchBloc extends Bloc<FlightSearchEvent, FlightSearchState> {
     } catch (e) {
       emit(state.copyWith(isLoading: false, error: e.toString()));
     }
+  }
+
+  void _onSwapCities(SwapCities event, Emitter<FlightSearchState> emit) {
+    print(
+      'Handling SwapCities event: ${state.departureCity} <-> ${state.arrivalCity}',
+    ); // Debug log
+    emit(
+      state.copyWith(
+        departureCity: state.arrivalCity,
+        arrivalCity: state.departureCity,
+      ),
+    );
   }
 }

@@ -1,5 +1,3 @@
-// screens/flight_selection/date_selection_screen.dart
-// Màn hình chọn ngày và thông tin tìm kiếm
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:booking_app/blocs/flight_search/flight_search_bloc.dart';
@@ -9,7 +7,6 @@ import 'package:booking_app/services/flight_service.dart';
 import 'package:booking_app/widgets/flight_selection/city_selector.dart';
 import 'package:booking_app/widgets/flight_selection/date_selector.dart';
 import 'package:booking_app/widgets/flight_selection/passenger_picker.dart';
-import 'package:booking_app/widgets/flight_selection/round_trip_switch.dart';
 import 'package:booking_app/utils/app_colors.dart';
 import 'package:booking_app/routes/app_routes.dart';
 
@@ -47,7 +44,6 @@ class DateSelectionScreen extends StatelessWidget {
   Future<void> _showCityPicker(BuildContext context, bool isDeparture) async {
     final cities =
         await context.read<FlightSearchBloc>().flightService.getCities();
-    print('Cities fetched for picker: $cities'); // Debug log
     if (context.mounted) {
       if (cities.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -97,9 +93,6 @@ class DateSelectionScreen extends StatelessWidget {
         },
       );
       if (selectedCity != null && context.mounted) {
-        print(
-          'Selected city: $selectedCity, isDeparture: $isDeparture',
-        ); // Debug log
         context.read<FlightSearchBloc>().add(
           ShowCityPicker(isDeparture: isDeparture, selectedCity: selectedCity),
         );
@@ -196,95 +189,200 @@ class DateSelectionScreen extends StatelessWidget {
     return BlocProvider(
       create: (context) => FlightSearchBloc(flightService: FlightService()),
       child: Scaffold(
-        backgroundColor: AppColors.grey,
+        backgroundColor: AppColors.grey_2,
         appBar: AppBar(
-          title: Text(
+          title: const Text(
             'Chọn ngày',
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: AppColors.black,
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
+            style: TextStyle(
+              color: AppColors.white,
+              fontFamily: 'Montserrat',
+              fontSize: 24,
+              fontWeight: FontWeight.w700,
             ),
           ),
           centerTitle: true,
-          backgroundColor: AppColors.grey,
+          backgroundColor: AppColors.primaryColor,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: AppColors.black),
+            icon: const Icon(Icons.arrow_back, color: AppColors.white),
             onPressed: () => Navigator.pop(context),
           ),
         ),
         body: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(20.0),
           child: SingleChildScrollView(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryColor,
-                    border: Border.all(color: AppColors.primaryColor, width: 2),
-                    borderRadius: BorderRadius.circular(10),
+                    color: AppColors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.grey.withOpacity(0.2),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Điểm đi
+                      // Hàng 1: Radio Button cho Một chiều và Khứ hồi
                       BlocBuilder<FlightSearchBloc, FlightSearchState>(
                         builder: (context, state) {
-                          return CitySelector(
-                            label: 'Chọn điểm đi',
-                            iconPath:
-                                'assets/icons/date_selection_screen/tdesign_location-filled.png',
-                            selectedCity: state.departureCity,
-                            onTap: () => _showCityPicker(context, true),
+                          return Row(
+                            children: [
+                              Radio<bool>(
+                                value: false,
+                                groupValue: state.isRoundTrip,
+                                onChanged: (value) {
+                                  if (value != null) {
+                                    context.read<FlightSearchBloc>().add(
+                                      ToggleRoundTrip(value),
+                                    );
+                                  }
+                                },
+                                activeColor: AppColors.primaryColor,
+                              ),
+                              GestureDetector(
+                                onTap: () {
+                                  context.read<FlightSearchBloc>().add(
+                                    ToggleRoundTrip(false),
+                                  );
+                                },
+                                child: Text(
+                                  'Một chiều',
+                                  style: TextStyle(
+                                    color:
+                                        !state.isRoundTrip
+                                            ? AppColors.black
+                                            : AppColors.primaryColor,
+                                    fontFamily: 'Montserrat',
+                                    fontSize: 16,
+                                    fontWeight:
+                                        !state.isRoundTrip
+                                            ? FontWeight.w600
+                                            : FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Radio<bool>(
+                                value: true,
+                                groupValue: state.isRoundTrip,
+                                onChanged: (value) {
+                                  if (value != null) {
+                                    context.read<FlightSearchBloc>().add(
+                                      ToggleRoundTrip(value),
+                                    );
+                                  }
+                                },
+                                activeColor: AppColors.primaryColor,
+                              ),
+                              GestureDetector(
+                                onTap: () {
+                                  context.read<FlightSearchBloc>().add(
+                                    ToggleRoundTrip(true),
+                                  );
+                                },
+                                child: Text(
+                                  'Khứ hồi',
+                                  style: TextStyle(
+                                    color:
+                                        state.isRoundTrip
+                                            ? AppColors.black
+                                            : AppColors.primaryColor,
+                                    fontFamily: 'Montserrat',
+                                    fontSize: 16,
+                                    fontWeight:
+                                        state.isRoundTrip
+                                            ? FontWeight.w600
+                                            : FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ],
                           );
                         },
                       ),
-                      const SizedBox(height: 12),
-                      // Điểm đến
+                      const SizedBox(height: 24), // Tăng khoảng cách
+                      // Hàng 2: Điểm đi, Nút đổi, Điểm đến
                       BlocBuilder<FlightSearchBloc, FlightSearchState>(
                         builder: (context, state) {
-                          return CitySelector(
-                            label: 'Chọn điểm đến',
-                            iconPath:
-                                'assets/icons/date_selection_screen/tdesign_location-filled.png',
-                            selectedCity: state.arrivalCity,
-                            onTap: () => _showCityPicker(context, false),
+                          return Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: CitySelector(
+                                  label: 'Điểm đi',
+                                  selectedCity: state.departureCity,
+                                  iconPath:
+                                      'assets/icons/date_selection_screen/tdesign_location-filled.png',
+                                  onTap: () => _showCityPicker(context, true),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                ),
+                                child: IconButton(
+                                  icon: const Icon(
+                                    Icons.swap_horiz,
+                                    color: AppColors.primaryColor,
+                                    size: 28,
+                                  ),
+                                  onPressed: () {
+                                    context.read<FlightSearchBloc>().add(
+                                      SwapCities(),
+                                    );
+                                  },
+                                ),
+                              ),
+                              Expanded(
+                                child: CitySelector(
+                                  label: 'Điểm đến',
+                                  selectedCity: state.arrivalCity,
+                                  iconPath:
+                                      'assets/icons/date_selection_screen/tdesign_location-filled.png',
+                                  onTap: () => _showCityPicker(context, false),
+                                ),
+                              ),
+                            ],
                           );
                         },
                       ),
-                      const SizedBox(height: 12),
-                      // Ngày đi
+                      const SizedBox(height: 24), // Tăng khoảng cách
+                      // Hàng 3: Ngày đi
                       BlocBuilder<FlightSearchBloc, FlightSearchState>(
                         builder: (context, state) {
                           return DateSelector(
                             label: 'Ngày đi',
                             selectedDate: state.departureDate,
                             onTap: () => _selectDate(context, true),
+                            isEnabled: true,
                           );
                         },
                       ),
-                      // Ngày về (nếu khứ hồi)
+                      const SizedBox(height: 24), // Tăng khoảng cách
+                      // Hàng 4: Ngày về
                       BlocBuilder<FlightSearchBloc, FlightSearchState>(
                         builder: (context, state) {
-                          if (state.isRoundTrip) {
-                            return Column(
-                              children: [
-                                const SizedBox(height: 12),
-                                DateSelector(
-                                  label: 'Ngày về',
-                                  selectedDate: state.returnDate,
-                                  onTap: () => _selectDate(context, false),
-                                ),
-                              ],
-                            );
-                          }
-                          return const SizedBox.shrink();
+                          return DateSelector(
+                            label: 'Ngày về',
+                            selectedDate: state.returnDate,
+                            onTap:
+                                state.isRoundTrip
+                                    ? () => _selectDate(context, false)
+                                    : null,
+                            isEnabled: state.isRoundTrip,
+                          );
                         },
                       ),
-                      const SizedBox(height: 12),
-                      // Số khách
+                      const SizedBox(height: 24), // Tăng khoảng cách
+                      // Hàng 5: Số khách
                       BlocBuilder<FlightSearchBloc, FlightSearchState>(
                         builder: (context, state) {
                           return PassengerPicker(
@@ -293,56 +391,56 @@ class DateSelectionScreen extends StatelessWidget {
                           );
                         },
                       ),
+                      const SizedBox(height: 24), // Tăng khoảng cách
+                      // Hàng 6: Nút tìm chuyến bay
+                      BlocBuilder<FlightSearchBloc, FlightSearchState>(
+                        builder: (context, state) {
+                          return Container(
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF1976D2), Color(0xFF42A5F5)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: ElevatedButton(
+                              onPressed:
+                                  state.canSearch
+                                      ? () {
+                                        context.read<FlightSearchBloc>().add(
+                                          SearchFlights(),
+                                        );
+                                      }
+                                      : null,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.transparent,
+                                foregroundColor: AppColors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 14,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                elevation: 0,
+                              ),
+                              child: const Text(
+                                'Tìm chuyến bay',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontFamily: 'Montserrat',
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.white,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
                     ],
                   ),
-                ),
-                const SizedBox(height: 20),
-                // Công tắc khứ hồi
-                BlocBuilder<FlightSearchBloc, FlightSearchState>(
-                  builder: (context, state) {
-                    return RoundTripSwitch(
-                      isRoundTrip: state.isRoundTrip,
-                      onChanged: (value) {
-                        context.read<FlightSearchBloc>().add(
-                          ToggleRoundTrip(value),
-                        );
-                      },
-                    );
-                  },
-                ),
-                const SizedBox(height: 20),
-                BlocBuilder<FlightSearchBloc, FlightSearchState>(
-                  builder: (context, state) {
-                    return ElevatedButton(
-                      onPressed:
-                          state.canSearch
-                              ? () {
-                                context.read<FlightSearchBloc>().add(
-                                  SearchFlights(),
-                                );
-                              }
-                              : null,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primaryColor,
-                        foregroundColor: AppColors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 32,
-                          vertical: 12,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      child: Text(
-                        'Tìm chuyến bay',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.white,
-                        ),
-                      ),
-                    );
-                  },
                 ),
                 // Thông báo lỗi
                 BlocListener<FlightSearchBloc, FlightSearchState>(

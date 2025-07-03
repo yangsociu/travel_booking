@@ -9,12 +9,14 @@ class FlightTicketCard extends StatelessWidget {
   final FlightModel flight;
   final VoidCallback? onTap;
   final bool isSelected;
+  final GlobalKey<ScaffoldMessengerState>? scaffoldMessengerKey;
 
   const FlightTicketCard({
     Key? key,
     required this.flight,
     this.onTap,
     this.isSelected = false,
+    this.scaffoldMessengerKey,
   }) : super(key: key);
 
   @override
@@ -228,7 +230,7 @@ class FlightTicketCard extends StatelessWidget {
               ),
               ElevatedButton(
                 onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
+                  scaffoldMessengerKey?.currentState?.showSnackBar(
                     SnackBar(content: Text('Đã chọn chuyến bay ${flight.id}')),
                   );
                   if (onTap != null) {
