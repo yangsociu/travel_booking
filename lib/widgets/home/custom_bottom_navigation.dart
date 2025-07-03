@@ -2,6 +2,7 @@
 // Widget thanh điều hướng dưới
 import 'package:flutter/material.dart';
 import 'package:booking_app/utils/app_colors.dart';
+import 'package:flutter/cupertino.dart';
 
 class CustomBottomNavigation extends StatelessWidget {
   final int currentIndex;
@@ -16,16 +17,10 @@ class CustomBottomNavigation extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final List<Map<String, dynamic>> items = [
-      {
-        'icon': 'assets/icons/home/material-symbols_home-outline-rounded.png',
-        'size': 42.0,
-      },
-      {'icon': 'assets/icons/home/material-symbols_search.png', 'size': 37.0},
-      {
-        'icon': 'assets/icons/home/material-symbols_map-outline.png',
-        'size': 40.0,
-      },
-      {'icon': 'assets/icons/home/mdi_user.png', 'size': 42.0},
+      {'icon': CupertinoIcons.home, 'size': 30.0},
+      {'icon': CupertinoIcons.search, 'size': 30.0},
+      {'icon': CupertinoIcons.tag_fill, 'size': 30.0},
+      {'icon': CupertinoIcons.person_fill, 'size': 30.0},
     ];
 
     return Container(
@@ -45,10 +40,10 @@ class CustomBottomNavigation extends StatelessWidget {
                         : Colors.transparent,
                 borderRadius: BorderRadius.circular(8.0),
               ),
-              child: Image.asset(
-                items[index]['icon'],
-                width: items[index]['size'],
-                height: items[index]['size'],
+              child: Icon(
+                items[index]['icon']
+                    as IconData, // Ép kiểu rõ ràng để tránh lỗi
+                size: items[index]['size'] as double,
                 color: AppColors.white,
               ),
             ),

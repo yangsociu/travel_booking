@@ -1,3 +1,5 @@
+// screens/flight_selection/date_selection_screen.dart
+// Màn hình chọn ngày và thông tin tìm kiếm
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:booking_app/blocs/flight_search/flight_search_bloc.dart';
@@ -5,11 +7,11 @@ import 'package:booking_app/blocs/flight_search/flight_search_event.dart';
 import 'package:booking_app/blocs/flight_search/flight_search_state.dart';
 import 'package:booking_app/services/flight_service.dart';
 import 'package:booking_app/widgets/flight_selection/city_selector.dart';
+import 'package:booking_app/widgets/flight_selection/date_selector.dart';
 import 'package:booking_app/widgets/flight_selection/passenger_picker.dart';
 import 'package:booking_app/widgets/flight_selection/round_trip_switch.dart';
 import 'package:booking_app/utils/app_colors.dart';
 import 'package:booking_app/routes/app_routes.dart';
-import 'package:booking_app/widgets/common/date_time_picker.dart';
 
 class DateSelectionScreen extends StatelessWidget {
   const DateSelectionScreen({super.key});
@@ -256,11 +258,10 @@ class DateSelectionScreen extends StatelessWidget {
                       // Ngày đi
                       BlocBuilder<FlightSearchBloc, FlightSearchState>(
                         builder: (context, state) {
-                          return DateTimePicker(
+                          return DateSelector(
                             label: 'Ngày đi',
-                            selectedDateTime: state.departureDate,
+                            selectedDate: state.departureDate,
                             onTap: () => _selectDate(context, true),
-                            isDateOnly: true,
                           );
                         },
                       ),
@@ -271,11 +272,10 @@ class DateSelectionScreen extends StatelessWidget {
                             return Column(
                               children: [
                                 const SizedBox(height: 12),
-                                DateTimePicker(
+                                DateSelector(
                                   label: 'Ngày về',
-                                  selectedDateTime: state.returnDate,
+                                  selectedDate: state.returnDate,
                                   onTap: () => _selectDate(context, false),
-                                  isDateOnly: true,
                                 ),
                               ],
                             );
