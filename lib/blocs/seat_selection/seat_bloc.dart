@@ -15,7 +15,18 @@ class SeatBloc extends Bloc<SeatEvent, SeatState> {
     emit(SeatLoading());
     try {
       final seats = await flightService.getSeats(event.flightId);
-      emit(SeatLoaded(seats: seats, selectedSeats: [])); // Khi load ghế
+      final returnSeats =
+          event.returnFlightId != null
+              ? await flightService.getSeats(event.returnFlightId!)
+              : <String, bool>{};
+      emit(
+        SeatLoaded(
+          seats: seats,
+          selectedSeats: [],
+          returnSeats: returnSeats,
+          returnSelectedSeats: [],
+        ),
+      );
     } catch (e) {
       emit(SeatError(message: 'Lỗi khi tải danh sách ghế: $e'));
     }
@@ -24,19 +35,36 @@ class SeatBloc extends Bloc<SeatEvent, SeatState> {
   void _onSelectSeat(SelectSeat event, Emitter<SeatState> emit) {
     if (state is SeatLoaded) {
       final currentState = state as SeatLoaded;
-      if (currentState.seats[event.seat] == true) {
+      final seats =
+          event.isReturnFlight ? currentState.returnSeats : currentState.seats;
+      final selectedSeats =
+          event.isReturnFlight
+              ? List<String>.from(currentState.returnSelectedSeats)
+              : List<String>.from(currentState.selectedSeats);
+
+      if (seats[event.seat] == true) {
         emit(SeatError(message: 'Ghế ${event.seat} đã được đặt'));
         return;
       }
-      final newSelectedSeats = List<String>.from(currentState.selectedSeats);
-      if (newSelectedSeats.contains(event.seat)) {
-        newSelectedSeats.remove(event.seat); // Bỏ chọn nếu ghế đã được chọn
+
+      if (selectedSeats.contains(event.seat)) {
+        selectedSeats.remove(event.seat);
       } else {
-        newSelectedSeats.add(event.seat); // Thêm ghế vào danh sách
+        selectedSeats.add(event.seat);
       }
+
       emit(
-        SeatLoaded(seats: currentState.seats, selectedSeats: newSelectedSeats),
-      ); // Khi chọn ghế
+        SeatLoaded(
+          seats: currentState.seats,
+          selectedSeats:
+              event.isReturnFlight ? currentState.selectedSeats : selectedSeats,
+          returnSeats: currentState.returnSeats,
+          returnSelectedSeats:
+              event.isReturnFlight
+                  ? selectedSeats
+                  : currentState.returnSelectedSeats,
+        ),
+      );
     }
   }
 }

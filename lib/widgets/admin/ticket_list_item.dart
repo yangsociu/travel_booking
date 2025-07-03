@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:booking_app/models/ticket.dart';
 import 'package:booking_app/utils/app_colors.dart';
-import 'package:booking_app/utils/app_theme.dart';
 import 'package:intl/intl.dart';
 
 class TicketListItem extends StatelessWidget {

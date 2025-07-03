@@ -1,10 +1,9 @@
-// widgets/home/promotion_banner.dart
-// Widget hiển thị banner khuyến mãi
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:booking_app/blocs/home/home_bloc.dart';
 import 'package:booking_app/blocs/home/home_state.dart';
 import 'package:booking_app/utils/app_colors.dart';
+import 'package:booking_app/widgets/common/loading_widget.dart';
 
 class PromotionBanner extends StatelessWidget {
   const PromotionBanner({super.key});
@@ -13,63 +12,61 @@ class PromotionBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<HomeBloc, HomeState>(
       builder: (context, state) {
-        if (state.isLoading) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (state.error != null) {
-          return Center(child: Text('Lỗi: ${state.error}'));
-        }
-        return Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Hãng hàng không',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: AppColors.primaryColor,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w400,
-                    height: 1.15,
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    // TODO: Xử lý sự kiện khi nhấn "Xem thêm"
-                  },
-                  child: Text(
-                    'Xem thêm',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+        return LoadingWidget(
+          isLoading: state.isLoading,
+          error: state.error,
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Hãng hàng không',
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       color: AppColors.primaryColor,
-                      fontSize: 16,
+                      fontSize: 20,
                       fontWeight: FontWeight.w400,
-                      decoration: TextDecoration.underline,
+                      height: 1.15,
                     ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            SizedBox(
-              height: 73,
-              child: PageView(
-                controller: PageController(viewportFraction: 0.65),
-                children:
-                    state.airlines
-                        .asMap()
-                        .entries
-                        .map(
-                          (entry) => _buildBanner(
-                            context: context,
-                            airline: entry.value.name,
-                            price: entry.value.price,
-                            image: entry.value.image,
-                          ),
-                        )
-                        .toList(),
+                  GestureDetector(
+                    onTap: () {
+                      // TODO: Xử lý sự kiện khi nhấn "Xem thêm"
+                    },
+                    child: Text(
+                      'Xem thêm',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: AppColors.primaryColor,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w400,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
+              const SizedBox(height: 10),
+              SizedBox(
+                height: 73,
+                child: PageView(
+                  controller: PageController(viewportFraction: 0.65),
+                  children:
+                      state.airlines
+                          .asMap()
+                          .entries
+                          .map(
+                            (entry) => _buildBanner(
+                              context: context,
+                              airline: entry.value.name,
+                              price: entry.value.price,
+                              image: entry.value.image,
+                            ),
+                          )
+                          .toList(),
+                ),
+              ),
+            ],
+          ),
         );
       },
     );

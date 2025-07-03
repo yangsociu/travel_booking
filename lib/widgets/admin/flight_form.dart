@@ -1,12 +1,10 @@
-// flight_form.dart
 import 'package:flutter/material.dart';
 import 'package:booking_app/models/flight_model.dart';
-import 'package:booking_app/services/flight_service.dart';
 import 'package:booking_app/utils/app_colors.dart';
-import 'package:booking_app/utils/app_theme.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:booking_app/blocs/admin_flight/admin_flight_bloc.dart';
 import 'package:booking_app/blocs/admin_flight/admin_flight_event.dart';
+import 'package:booking_app/widgets/common/date_time_picker.dart';
 
 class FlightForm extends StatefulWidget {
   final FlightModel? flight;
@@ -202,37 +200,15 @@ class _FlightFormState extends State<FlightForm> {
                             : null,
               ),
               const SizedBox(height: 12),
-              ListTile(
-                title: Text(
-                  _departureTime == null
-                      ? 'Chọn thời gian khởi hành'
-                      : _departureTime!.toIso8601String(),
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.black,
-                    fontSize: 16,
-                  ),
-                ),
-                trailing: const Icon(
-                  Icons.calendar_today,
-                  color: AppColors.black,
-                ),
+              DateTimePicker(
+                label: 'Chọn thời gian khởi hành',
+                selectedDateTime: _departureTime,
                 onTap: () => _selectDateTime(context, true),
               ),
               const SizedBox(height: 12),
-              ListTile(
-                title: Text(
-                  _arrivalTime == null
-                      ? 'Chọn thời gian đến'
-                      : _arrivalTime!.toIso8601String(),
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.black,
-                    fontSize: 16,
-                  ),
-                ),
-                trailing: const Icon(
-                  Icons.calendar_today,
-                  color: AppColors.black,
-                ),
+              DateTimePicker(
+                label: 'Chọn thời gian đến',
+                selectedDateTime: _arrivalTime,
                 onTap: () => _selectDateTime(context, false),
               ),
               const SizedBox(height: 20),

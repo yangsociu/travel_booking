@@ -16,7 +16,6 @@ import 'package:booking_app/routes/app_routes.dart';
 import 'package:booking_app/screens/passenger_info/passenger_info_screen.dart';
 import 'package:booking_app/models/passenger.dart';
 import 'package:booking_app/models/flight_model.dart';
-import 'package:booking_app/screens/profile/profile_screen.dart';
 
 class AppRouter {
   static Route<dynamic> generateRoute(RouteSettings settings) {

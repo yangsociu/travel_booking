@@ -1,11 +1,6 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
-// custom_text_field.dart
-// custom_text_field.dart
-// Widget trường nhập liệu tùy chỉnh
 import 'package:flutter/material.dart';
 
 import 'package:booking_app/utils/app_colors.dart';
-import 'package:booking_app/utils/app_theme.dart';
 
 class CustomTextField extends StatelessWidget {
   final TextEditingController controller;

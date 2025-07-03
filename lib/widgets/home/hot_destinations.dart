@@ -1,5 +1,3 @@
-// widgets/home/hot_destinations.dart
-// Widget hiển thị các điểm đến nổi bật
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:booking_app/blocs/home/home_bloc.dart';
@@ -7,6 +5,7 @@ import 'package:booking_app/blocs/home/home_event.dart';
 import 'package:booking_app/blocs/home/home_state.dart';
 import 'package:booking_app/models/destination_model.dart';
 import 'package:booking_app/utils/app_colors.dart';
+import 'package:booking_app/widgets/common/loading_widget.dart';
 
 class HotDestinations extends StatelessWidget {
   const HotDestinations({super.key});
@@ -15,69 +14,67 @@ class HotDestinations extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<HomeBloc, HomeState>(
       builder: (context, state) {
-        if (state.isLoading) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (state.error != null) {
-          return Center(child: Text('Lỗi: ${state.error}'));
-        }
-        return Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Điểm đến nổi bật',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: AppColors.primaryColor,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w400,
-                    height: 1.15,
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    // TODO: Xử lý sự kiện khi nhấn "Xem thêm"
-                  },
-                  child: Text(
-                    'Xem thêm',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+        return LoadingWidget(
+          isLoading: state.isLoading,
+          error: state.error,
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Điểm đến nổi bật',
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       color: AppColors.primaryColor,
-                      fontSize: 16,
+                      fontSize: 20,
                       fontWeight: FontWeight.w400,
-                      decoration: TextDecoration.underline,
+                      height: 1.15,
                     ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              height: 326,
-              child: PageView(
-                controller: PageController(viewportFraction: 0.78),
-                children:
-                    state.destinations
-                        .asMap()
-                        .entries
-                        .map(
-                          (entry) => _buildDestinationCard(
-                            context: context,
-                            index: entry.key,
-                            destination: entry.value,
-                            isSelected:
-                                state.selectedDestinationIndex == entry.key,
-                            onTap: () {
-                              context.read<HomeBloc>().add(
-                                SelectDestination(entry.key),
-                              );
-                            },
-                          ),
-                        )
-                        .toList(),
+                  GestureDetector(
+                    onTap: () {
+                      // TODO: Xử lý sự kiện khi nhấn "Xem thêm"
+                    },
+                    child: Text(
+                      'Xem thêm',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: AppColors.primaryColor,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w400,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
+              const SizedBox(height: 24),
+              SizedBox(
+                height: 326,
+                child: PageView(
+                  controller: PageController(viewportFraction: 0.78),
+                  children:
+                      state.destinations
+                          .asMap()
+                          .entries
+                          .map(
+                            (entry) => _buildDestinationCard(
+                              context: context,
+                              index: entry.key,
+                              destination: entry.value,
+                              isSelected:
+                                  state.selectedDestinationIndex == entry.key,
+                              onTap: () {
+                                context.read<HomeBloc>().add(
+                                  SelectDestination(entry.key),
+                                );
+                              },
+                            ),
+                          )
+                          .toList(),
+                ),
+              ),
+            ],
+          ),
         );
       },
     );

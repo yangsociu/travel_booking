@@ -1,8 +1,7 @@
-// widgets/admin/flight_list_item.dart
 import 'package:flutter/material.dart';
 import 'package:booking_app/models/flight_model.dart';
 import 'package:booking_app/utils/app_colors.dart';
-import 'package:booking_app/utils/app_theme.dart';
+import 'package:booking_app/widgets/common/custom_card.dart';
 
 class FlightListItem extends StatelessWidget {
   final FlightModel flight;
@@ -18,20 +17,9 @@ class FlightListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
+    return CustomCard(
       padding: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.grey.withOpacity(0.3),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+      borderRadius: 12.0,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

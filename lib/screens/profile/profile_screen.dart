@@ -5,7 +5,6 @@ import 'package:booking_app/widgets/common/custom_button.dart';
 import 'package:booking_app/widgets/profile/ticket_history_section.dart';
 import 'package:booking_app/routes/app_routes.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:booking_app/widgets/profile/ticket_history_section.dart';
 
 class ProfileScreen extends StatelessWidget {
   final FlightService flightService;

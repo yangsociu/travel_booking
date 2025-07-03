@@ -7,7 +7,6 @@ import 'package:booking_app/blocs/flight_selection/flight_selection_state.dart';
 import 'package:booking_app/services/flight_service.dart';
 import 'package:booking_app/widgets/flight_selection/flight_ticket_card.dart';
 import 'package:booking_app/utils/app_colors.dart';
-import 'package:booking_app/utils/app_theme.dart';
 import 'package:booking_app/models/flight_model.dart';
 
 class FlightSelectionScreen extends StatefulWidget {

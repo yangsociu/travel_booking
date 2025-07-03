@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:booking_app/models/flight_model.dart';
-import 'package:booking_app/models/passenger.dart';
 import 'package:booking_app/widgets/passenger/passenger_form.dart';
 import 'package:booking_app/widgets/passenger/flight_ticket_info.dart';
 import 'package:booking_app/routes/app_routes.dart';
 import 'package:booking_app/utils/app_colors.dart';
-import 'package:intl/intl.dart';
 
 class PassengerInfoScreen extends StatefulWidget {
   final FlightModel flight;

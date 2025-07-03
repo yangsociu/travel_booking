@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:booking_app/models/flight_model.dart';
 import 'package:booking_app/utils/app_colors.dart';
-import 'package:booking_app/utils/app_theme.dart';
-import 'package:booking_app/routes/app_routes.dart';
 
 class FlightTicketCard extends StatelessWidget {
   final FlightModel flight;

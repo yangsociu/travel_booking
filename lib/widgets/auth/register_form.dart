@@ -7,7 +7,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:booking_app/blocs/auth/auth_bloc.dart';
 import 'package:booking_app/widgets/common/custom_text_field.dart';
 import 'package:booking_app/widgets/common/custom_button.dart';
-import 'package:booking_app/utils/app_colors.dart';
 
 class RegisterForm extends StatefulWidget {
   const RegisterForm({super.key});

@@ -1,4 +1,3 @@
-// payment_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:booking_app/blocs/payment/payment_bloc.dart';
@@ -48,14 +47,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
   final _expiryDateController = TextEditingController();
   final _cvvController = TextEditingController();
   String? _cardType;
-  String _calculateFlightDuration() {
-    final duration = widget.flight.arrivalTime.difference(
-      widget.flight.departureTime,
-    );
-    final hours = duration.inHours;
-    final minutes = duration.inMinutes.remainder(60);
-    return '${hours}h ${minutes}m';
-  }
 
   @override
   void dispose() {
@@ -68,14 +59,12 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
   double _calculateTotalPrice() {
     double total = 0;
-    // Giá vé chuyến đi
     for (var seat in widget.selectedSeats) {
       total +=
           int.parse(seat[0]) <= 4
               ? widget.flight.price * 1.5
               : widget.flight.price;
     }
-    // Giá vé chuyến về (nếu có)
     if (widget.returnFlight != null) {
       for (var seat in widget.returnSelectedSeats) {
         total +=
@@ -89,6 +78,13 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
   String _formatPrice(double price) {
     return '${(price / 1000).toStringAsFixed(0)}K';
+  }
+
+  String _calculateFlightDuration(DateTime departure, DateTime arrival) {
+    final duration = arrival.difference(departure);
+    final hours = duration.inHours;
+    final minutes = duration.inMinutes.remainder(60);
+    return '${hours}h ${minutes}m';
   }
 
   @override
@@ -105,14 +101,15 @@ class _PaymentScreenState extends State<PaymentScreen> {
               AppRoutes.paymentSuccess,
               arguments: {
                 'flight': widget.flight,
-                'passengers': widget.passengers, // Truyền toàn bộ passengers
-                'selectedSeats': widget.selectedSeats, // Truyền toàn bộ seats
+                'passengers': widget.passengers,
+                'selectedSeats': widget.selectedSeats,
                 'returnFlight': widget.returnFlight,
                 'returnSelectedSeats': widget.returnSelectedSeats,
-                'totalPrice': _formatPrice(
-                  _calculateTotalPrice(),
-                ), // <-- truyền String
-                'duration': _calculateFlightDuration(),
+                'totalPrice': _formatPrice(_calculateTotalPrice()),
+                'duration': _calculateFlightDuration(
+                  widget.flight.departureTime,
+                  widget.flight.arrivalTime,
+                ),
               },
             );
           } else if (state is PaymentError) {
@@ -146,191 +143,23 @@ class _PaymentScreenState extends State<PaymentScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Khung thông tin chuyến bay
-                Container(
-                  padding: const EdgeInsets.all(16.0),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryColor,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            widget.flight.departureCode,
-                            style: const TextStyle(
-                              color: AppColors.white,
-                              fontFamily: 'Montserrat',
-                              fontSize: 24,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          Expanded(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Image.asset(
-                                  'assets/icons/flight_selection_screen/ph_dot-duotone.png',
-                                  width: 28,
-                                  height: 28,
-                                  color: AppColors.white,
-                                ),
-                                Container(
-                                  width: 80,
-                                  height: 2,
-                                  color: AppColors.white,
-                                ),
-                                Image.asset(
-                                  'assets/icons/flight_selection_screen/weui_location-outlined.png',
-                                  width: 16,
-                                  height: 16,
-                                  color: AppColors.white,
-                                ),
-                              ],
-                            ),
-                          ),
-                          Text(
-                            widget.flight.arrivalCode,
-                            style: const TextStyle(
-                              color: AppColors.white,
-                              fontFamily: 'Montserrat',
-                              fontSize: 24,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        DateFormat(
-                          'HH:mm dd MMM yyyy',
-                        ).format(widget.flight.departureTime),
-                        style: const TextStyle(
-                          color: AppColors.white,
-                          fontFamily: 'Montserrat',
-                          fontSize: 14,
-                          fontWeight: FontWeight.w400,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 8),
-                      const Divider(color: AppColors.white, thickness: 1),
-                      const SizedBox(height: 8),
-                      Column(
-                        children: List.generate(
-                          widget.passengers.length,
-                          (index) => Text(
-                            'Hành khách: ${widget.passengers[index].firstName} ${widget.passengers[index].lastName} - Ghế: ${widget.selectedSeats[index]}',
-                            style: const TextStyle(
-                              color: AppColors.white,
-                              fontFamily: 'Montserrat',
-                              fontSize: 14,
-                              fontWeight: FontWeight.w400,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                // Chuyến đi
+                _buildFlightInfo(
+                  context,
+                  widget.flight,
+                  widget.selectedSeats,
+                  'Chuyến đi',
                 ),
                 if (widget.returnFlight != null) ...[
                   const SizedBox(height: 20),
-                  // Thông tin chuyến về
-                  Container(
-                    padding: const EdgeInsets.all(16.0),
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryColor,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              widget.returnFlight!.departureCode,
-                              style: const TextStyle(
-                                color: AppColors.white,
-                                fontFamily: 'Montserrat',
-                                fontSize: 24,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            Expanded(
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Image.asset(
-                                    'assets/icons/flight_selection_screen/ph_dot-duotone.png',
-                                    width: 28,
-                                    height: 28,
-                                    color: AppColors.white,
-                                  ),
-                                  Container(
-                                    width: 80,
-                                    height: 2,
-                                    color: AppColors.white,
-                                  ),
-                                  Image.asset(
-                                    'assets/icons/flight_selection_screen/weui_location-outlined.png',
-                                    width: 16,
-                                    height: 16,
-                                    color: AppColors.white,
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Text(
-                              widget.returnFlight!.arrivalCode,
-                              style: const TextStyle(
-                                color: AppColors.white,
-                                fontFamily: 'Montserrat',
-                                fontSize: 24,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          DateFormat(
-                            'HH:mm dd MMM yyyy',
-                          ).format(widget.returnFlight!.departureTime),
-                          style: const TextStyle(
-                            color: AppColors.white,
-                            fontFamily: 'Montserrat',
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 8),
-                        const Divider(color: AppColors.white, thickness: 1),
-                        const SizedBox(height: 8),
-                        Column(
-                          children: List.generate(
-                            widget.passengers.length,
-                            (index) => Text(
-                              'Hành khách: ${widget.passengers[index].firstName} ${widget.passengers[index].lastName} - Ghế: ${widget.returnSelectedSeats[index]}',
-                              style: const TextStyle(
-                                color: AppColors.white,
-                                fontFamily: 'Montserrat',
-                                fontSize: 14,
-                                fontWeight: FontWeight.w400,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                  _buildFlightInfo(
+                    context,
+                    widget.returnFlight!,
+                    widget.returnSelectedSeats,
+                    'Chuyến về',
                   ),
                 ],
                 const SizedBox(height: 20),
-                // Tiêu đề
                 const Text(
                   'Thông tin thanh toán',
                   style: TextStyle(
@@ -341,7 +170,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                // Bảng nhập thông tin
                 Container(
                   padding: const EdgeInsets.all(16.0),
                   decoration: BoxDecoration(
@@ -420,7 +248,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
                           obscureText: true,
                         ),
                         const SizedBox(height: 20),
-                        // Tổng tiền
                         Text(
                           'Tổng tiền: ${widget.ticketPrice}',
                           style: const TextStyle(
@@ -431,15 +258,11 @@ class _PaymentScreenState extends State<PaymentScreen> {
                           ),
                         ),
                         const SizedBox(height: 20),
-                        // Nút thanh toán
                         BlocBuilder<PaymentBloc, PaymentState>(
                           builder: (context, state) {
                             final isLoading = state is PaymentLoading;
                             return CustomButton(
-                              text:
-                                  state is PaymentLoading
-                                      ? 'Đang xử lý...'
-                                      : 'Thanh toán',
+                              text: isLoading ? 'Đang xử lý...' : 'Thanh toán',
                               onPressed:
                                   isLoading
                                       ? null
@@ -479,6 +302,107 @@ class _PaymentScreenState extends State<PaymentScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildFlightInfo(
+    BuildContext context,
+    FlightModel flight,
+    List<String> selectedSeats,
+    String title,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        color: AppColors.primaryColor,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              color: AppColors.white,
+              fontFamily: 'Montserrat',
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                flight.departureCode,
+                style: const TextStyle(
+                  color: AppColors.white,
+                  fontFamily: 'Montserrat',
+                  fontSize: 24,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image.asset(
+                      'assets/icons/flight_selection_screen/ph_dot-duotone.png',
+                      width: 28,
+                      height: 28,
+                      color: AppColors.white,
+                    ),
+                    Container(width: 80, height: 2, color: AppColors.white),
+                    Image.asset(
+                      'assets/icons/flight_selection_screen/weui_location-outlined.png',
+                      width: 16,
+                      height: 16,
+                      color: AppColors.white,
+                    ),
+                  ],
+                ),
+              ),
+              Text(
+                flight.arrivalCode,
+                style: const TextStyle(
+                  color: AppColors.white,
+                  fontFamily: 'Montserrat',
+                  fontSize: 24,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            DateFormat('HH:mm dd MMM yyyy').format(flight.departureTime),
+            style: const TextStyle(
+              color: AppColors.white,
+              fontFamily: 'Montserrat',
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          const Divider(color: AppColors.white, thickness: 1),
+          const SizedBox(height: 8),
+          Column(
+            children: List.generate(
+              widget.passengers.length,
+              (index) => Text(
+                'Hành khách: ${widget.passengers[index].firstName} ${widget.passengers[index].lastName} - Ghế: ${index < selectedSeats.length ? selectedSeats[index] : 'Chưa chọn'}',
+                style: const TextStyle(
+                  color: AppColors.white,
+                  fontFamily: 'Montserrat',
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

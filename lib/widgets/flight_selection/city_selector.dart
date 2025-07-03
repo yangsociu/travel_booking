@@ -1,8 +1,7 @@
-// widgets/flight_selection/city_selector.dart
-// Widget chọn thành phố
 import 'package:flutter/material.dart';
 import 'package:booking_app/utils/app_colors.dart';
-import 'package:booking_app/utils/app_theme.dart';
+import 'package:booking_app/widgets/common/custom_card.dart';
+import 'package:booking_app/widgets/common/icon_text_row.dart';
 
 class CitySelector extends StatelessWidget {
   final String label;
@@ -22,29 +21,19 @@ class CitySelector extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
+      child: CustomCard(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: AppColors.white,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          children: [
-            Image.asset(
-              iconPath,
-              width: 24,
-              height: 24,
-              color: AppColors.black,
-            ),
-            const SizedBox(width: 10),
-            Text(
-              selectedCity ?? label,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                fontSize: 16,
-                color: AppColors.black,
-              ),
-            ),
-          ],
+        child: IconTextRow(
+          iconPath: iconPath,
+          text: selectedCity ?? label,
+          textStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            fontSize: 16,
+            color: AppColors.black,
+          ),
+          iconWidth: 24,
+          iconHeight: 24,
+          iconColor: AppColors.black,
+          spacing: 10,
         ),
       ),
     );
