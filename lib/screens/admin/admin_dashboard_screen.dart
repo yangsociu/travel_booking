@@ -46,48 +46,52 @@ class AdminDashboardScreen extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Color(0xFF121212), Color(0xFF1E1E1E)],
+            colors: [Color(0xFF1A1A2E), Color(0xFF2E2E4D)], // Gradient sáng hơn
           ),
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 20.0,
+              vertical: 24.0,
+            ), // Tăng padding
             child: SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 32),
                   const Icon(
                     Icons.dashboard,
-                    size: 60,
+                    size: 64,
                     color: AppColors.primaryColor,
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 16),
                   Text(
                     'Bảng Điều Khiển Admin',
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       fontWeight: FontWeight.bold,
-                      fontSize: 28,
+                      fontSize: 30, // Tăng kích thước chữ
                       color: AppColors.white,
                       fontFamily: 'Montserrat',
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
                   Text(
                     'Quản lý chuyến bay và vé đặt một cách dễ dàng',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontSize: 16,
-                      color: AppColors.grey,
+                      fontSize: 18, // Tăng kích thước chữ phụ
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.grey.withOpacity(0.8),
                       fontFamily: 'Montserrat',
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 32),
                   GridView.count(
                     crossAxisCount: 2,
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
+                    crossAxisSpacing: 20, // Tăng khoảng cách
+                    mainAxisSpacing: 20,
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     children: [
@@ -121,15 +125,17 @@ class AdminDashboardScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 32),
                   Card(
-                    color: const Color(0xFF1E1E1E),
+                    color: const Color(0xFF252545), // Màu card sáng hơn
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(20), // Bo góc mềm hơn
                     ),
-                    elevation: 2,
+                    elevation: 4, // Bóng nhẹ hơn
                     child: Padding(
-                      padding: const EdgeInsets.all(16.0),
+                      padding: const EdgeInsets.all(
+                        20.0,
+                      ), // Tăng padding trong card
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -138,15 +144,15 @@ class AdminDashboardScreen extends StatelessWidget {
                             style: Theme.of(
                               context,
                             ).textTheme.bodyLarge?.copyWith(
-                              fontSize: 18,
+                              fontSize: 20,
                               fontWeight: FontWeight.w600,
                               color: AppColors.white,
                               fontFamily: 'Montserrat',
                             ),
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 20),
                           SizedBox(
-                            height: 250,
+                            height: 280, // Tăng chiều cao biểu đồ
                             child: BlocBuilder<
                               AdminBookingBloc,
                               AdminBookingState
@@ -160,52 +166,68 @@ class AdminDashboardScreen extends StatelessWidget {
                                           ? monthlyRevenue.values.reduce(
                                                 (a, b) => a > b ? a : b,
                                               ) *
-                                              1.2
+                                              1.3
                                           : 1000000.0;
-                                  return BarChart(
-                                    BarChartData(
-                                      alignment: BarChartAlignment.spaceAround,
-                                      maxY: maxY,
-                                      minY: 0,
-                                      barGroups:
-                                          monthlyRevenue.entries
-                                              .toList()
-                                              .asMap()
-                                              .entries
-                                              .map(
-                                                (entry) => BarChartGroupData(
-                                                  x: entry.key,
-                                                  barRods: [
-                                                    BarChartRodData(
-                                                      toY: entry.value.value,
-                                                      gradient: LinearGradient(
-                                                        colors: [
+                                  return LineChart(
+                                    LineChartData(
+                                      lineBarsData: [
+                                        LineChartBarData(
+                                          spots:
+                                              monthlyRevenue.entries
+                                                  .map(
+                                                    (e) => FlSpot(
+                                                      e.key.toDouble(),
+                                                      e.value,
+                                                    ),
+                                                  )
+                                                  .toList(),
+                                          isCurved: true, // Đường cong mượt
+                                          gradient: LinearGradient(
+                                            colors: [
+                                              AppColors.primaryColor,
+                                              AppColors.primaryColor
+                                                  .withOpacity(0.6),
+                                            ],
+                                            begin: Alignment.bottomCenter,
+                                            end: Alignment.topCenter,
+                                          ),
+                                          barWidth: 4,
+                                          dotData: FlDotData(
+                                            show: true,
+                                            getDotPainter:
+                                                (spot, percent, bar, index) =>
+                                                    FlDotCirclePainter(
+                                                      radius: 6,
+                                                      color: AppColors.white,
+                                                      strokeWidth: 2,
+                                                      strokeColor:
                                                           AppColors
                                                               .primaryColor,
-                                                          AppColors.primaryColor
-                                                              .withOpacity(0.7),
-                                                        ],
-                                                        begin:
-                                                            Alignment
-                                                                .bottomCenter,
-                                                        end:
-                                                            Alignment.topCenter,
-                                                      ),
-                                                      width: 16,
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            6,
-                                                          ),
                                                     ),
-                                                  ],
-                                                ),
-                                              )
-                                              .toList(),
+                                          ),
+                                          belowBarData: BarAreaData(
+                                            show: true,
+                                            gradient: LinearGradient(
+                                              colors: [
+                                                AppColors.primaryColor
+                                                    .withOpacity(0.3),
+                                                AppColors.primaryColor
+                                                    .withOpacity(0.1),
+                                              ],
+                                              begin: Alignment.topCenter,
+                                              end: Alignment.bottomCenter,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                      minY: 0,
+                                      maxY: maxY,
                                       titlesData: FlTitlesData(
                                         leftTitles: AxisTitles(
                                           sideTitles: SideTitles(
                                             showTitles: true,
-                                            reservedSize: 60,
+                                            reservedSize:
+                                                70, // Tăng không gian cho số
                                             getTitlesWidget: (value, meta) {
                                               return Text(
                                                 NumberFormat.compactCurrency(
@@ -250,14 +272,19 @@ class AdminDashboardScreen extends StatelessWidget {
                                                 'T11',
                                                 'T12',
                                               ];
-                                              return Text(
-                                                months[value.toInt()],
-                                                style: const TextStyle(
-                                                  color: AppColors.white,
-                                                  fontSize: 12,
-                                                  fontFamily: 'Montserrat',
-                                                ),
-                                              );
+                                              final index = value.toInt();
+                                              if (index >= 0 &&
+                                                  index < months.length) {
+                                                return Text(
+                                                  months[index],
+                                                  style: const TextStyle(
+                                                    color: AppColors.white,
+                                                    fontSize: 14,
+                                                    fontFamily: 'Montserrat',
+                                                  ),
+                                                );
+                                              }
+                                              return const Text('');
                                             },
                                           ),
                                         ),
@@ -283,28 +310,26 @@ class AdminDashboardScreen extends StatelessWidget {
                                           width: 1,
                                         ),
                                       ),
-                                      barTouchData: BarTouchData(
+                                      lineTouchData: LineTouchData(
                                         enabled: true,
-                                        touchTooltipData: BarTouchTooltipData(
-                                          getTooltipItem: (
-                                            group,
-                                            groupIndex,
-                                            rod,
-                                            rodIndex,
-                                          ) {
-                                            return BarTooltipItem(
-                                              NumberFormat.currency(
-                                                locale: 'vi_VN',
-                                                symbol: '₫',
-                                                decimalDigits: 0,
-                                              ).format(rod.toY),
-                                              const TextStyle(
-                                                color: AppColors.white,
-                                                fontFamily: 'Montserrat',
-                                                fontSize: 12,
-                                              ),
-                                            );
-                                          },
+                                        touchTooltipData: LineTouchTooltipData(
+                                          getTooltipItems:
+                                              (touchedSpots) =>
+                                                  touchedSpots.map((spot) {
+                                                    return LineTooltipItem(
+                                                      NumberFormat.currency(
+                                                        locale: 'vi_VN',
+                                                        symbol: '₫',
+                                                        decimalDigits: 0,
+                                                      ).format(spot.y),
+                                                      const TextStyle(
+                                                        color: AppColors.white,
+                                                        fontFamily:
+                                                            'Montserrat',
+                                                        fontSize: 14,
+                                                      ),
+                                                    );
+                                                  }).toList(),
                                         ),
                                       ),
                                     ),

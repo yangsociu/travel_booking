@@ -4,6 +4,8 @@ import 'package:booking_app/utils/app_colors.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:booking_app/blocs/admin_flight/admin_flight_bloc.dart';
 import 'package:booking_app/blocs/admin_flight/admin_flight_event.dart';
+import 'package:booking_app/services/flight_service.dart';
+import 'package:intl/intl.dart';
 
 class FlightForm extends StatefulWidget {
   final FlightModel? flight;
@@ -17,61 +19,80 @@ class FlightForm extends StatefulWidget {
 class _FlightFormState extends State<FlightForm> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _flightIdController;
-  late TextEditingController _departureCityController;
-  late TextEditingController _arrivalCityController;
-  late TextEditingController _departureCodeController;
-  late TextEditingController _arrivalCodeController;
   late TextEditingController _priceController;
+  String? _departureCity;
+  String? _arrivalCity;
+  String? _departureAirportName;
+  String? _arrivalAirportName;
+  String? _departureAirportCode;
+  String? _arrivalAirportCode;
   DateTime? _departureTime;
   DateTime? _arrivalTime;
+  List<Map<String, String>> _cities = [];
 
   @override
   void initState() {
     super.initState();
     _flightIdController = TextEditingController(text: widget.flight?.id ?? '');
-    _departureCityController = TextEditingController(
-      text: widget.flight?.departureCity ?? '',
-    );
-    _arrivalCityController = TextEditingController(
-      text: widget.flight?.arrivalCity ?? '',
-    );
-    _departureCodeController = TextEditingController(
-      text: widget.flight?.departureCode ?? '',
-    );
-    _arrivalCodeController = TextEditingController(
-      text: widget.flight?.arrivalCode ?? '',
-    );
     _priceController = TextEditingController(
       text: widget.flight?.price.toString() ?? '',
     );
+    _departureCity = widget.flight?.departureCity;
+    _arrivalCity = widget.flight?.arrivalCity;
+    _departureAirportName = widget.flight?.departureAirportName;
+    _arrivalAirportName = widget.flight?.arrivalAirportName;
+    _departureAirportCode = widget.flight?.departureAirportCode;
+    _arrivalAirportCode = widget.flight?.arrivalAirportCode;
     _departureTime = widget.flight?.departureTime ?? DateTime.now();
     _arrivalTime =
         widget.flight?.arrivalTime ??
-        DateTime.now().add(const Duration(hours: 2));
+        DateTime.now().add(const Duration(hours: 1, minutes: 30));
+    _loadCities();
   }
 
   @override
   void dispose() {
     _flightIdController.dispose();
-    _departureCityController.dispose();
-    _arrivalCityController.dispose();
-    _departureCodeController.dispose();
-    _arrivalCodeController.dispose();
     _priceController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadCities() async {
+    try {
+      final cities = await context.read<FlightService>().getCities();
+      setState(() {
+        _cities = cities;
+      });
+      print('Loaded cities: $_cities');
+    } catch (e) {
+      print('Error loading cities: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Không thể tải danh sách thành phố: $e'),
+          backgroundColor: const Color(0xFF1E1E1E),
+        ),
+      );
+    }
   }
 
   Future<void> _selectDateTime(BuildContext context, bool isDeparture) async {
     final DateTime? pickedDate = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
+      initialDate:
+          isDeparture
+              ? _departureTime ?? DateTime.now()
+              : _arrivalTime ?? DateTime.now(),
       firstDate: DateTime.now(),
       lastDate: DateTime(DateTime.now().year + 1),
     );
     if (pickedDate != null) {
       final TimeOfDay? pickedTime = await showTimePicker(
         context: context,
-        initialTime: TimeOfDay.now(),
+        initialTime: TimeOfDay.fromDateTime(
+          isDeparture
+              ? _departureTime ?? DateTime.now()
+              : _arrivalTime ?? DateTime.now(),
+        ),
       );
       if (pickedTime != null && context.mounted) {
         final selectedDateTime = DateTime(
@@ -84,10 +105,21 @@ class _FlightFormState extends State<FlightForm> {
         setState(() {
           if (isDeparture) {
             _departureTime = selectedDateTime;
+            if (_arrivalTime == null ||
+                _arrivalTime!.isBefore(
+                  selectedDateTime.add(const Duration(hours: 1, minutes: 30)),
+                )) {
+              _arrivalTime = selectedDateTime.add(
+                const Duration(hours: 1, minutes: 30),
+              );
+            }
           } else {
             _arrivalTime = selectedDateTime;
           }
         });
+        print(
+          'Selected ${isDeparture ? "departure" : "arrival"} time: $selectedDateTime',
+        );
       }
     }
   }
@@ -162,42 +194,95 @@ class _FlightFormState extends State<FlightForm> {
                   },
                 ),
                 const SizedBox(height: 12),
-                TextFormField(
-                  controller: _departureCityController,
-                  decoration: InputDecoration(
-                    labelText: 'Điểm đi',
-                    labelStyle: const TextStyle(
-                      color: AppColors.grey,
+                Theme(
+                  data: Theme.of(
+                    context,
+                  ).copyWith(canvasColor: const Color(0xFF1E1E1E)),
+                  child: DropdownButtonFormField<String>(
+                    value: _departureCity,
+                    decoration: InputDecoration(
+                      labelText: 'Điểm đi',
+                      labelStyle: const TextStyle(
+                        color: AppColors.grey,
+                        fontFamily: 'Montserrat',
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: AppColors.white.withOpacity(0.3),
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(
+                          color: AppColors.primaryColor,
+                        ),
+                      ),
+                      fillColor: const Color(0xFF1E1E1E),
+                      filled: true,
+                    ),
+                    style: const TextStyle(
+                      color: AppColors.white,
                       fontFamily: 'Montserrat',
                     ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(
-                        color: AppColors.white.withOpacity(0.3),
-                      ),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(
-                        color: AppColors.primaryColor,
-                      ),
-                    ),
-                    fillColor: const Color(0xFF1E1E1E),
-                    filled: true,
+                    dropdownColor: const Color(0xFF1E1E1E),
+                    items:
+                        _cities
+                            .map(
+                              (city) => DropdownMenuItem(
+                                value: city['name'],
+                                child: Text(
+                                  city['name']!,
+                                  style: const TextStyle(
+                                    color: AppColors.white,
+                                    fontFamily: 'Montserrat',
+                                  ),
+                                ),
+                              ),
+                            )
+                            .toList(),
+                    onChanged: (value) {
+                      if (value == _arrivalCity) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Điểm đi và điểm đến không được trùng nhau',
+                            ),
+                            backgroundColor: const Color(0xFF1E1E1E),
+                          ),
+                        );
+                        return;
+                      }
+                      setState(() {
+                        _departureCity = value;
+                        final city = _cities.firstWhere(
+                          (c) => c['name'] == value,
+                          orElse:
+                              () => {
+                                'airportName': 'Unknown',
+                                'airportCode': 'Unknown',
+                              },
+                        );
+                        _departureAirportName = city['airportName'];
+                        _departureAirportCode = city['airportCode'];
+                      });
+                      print(
+                        'Selected departure city: $_departureCity, airport: $_departureAirportName, code: $_departureAirportCode',
+                      );
+                    },
+                    validator:
+                        (value) =>
+                            value == null ? 'Vui lòng chọn điểm đi' : null,
                   ),
-                  style: const TextStyle(
-                    color: AppColors.white,
-                    fontFamily: 'Montserrat',
-                  ),
-                  validator:
-                      (value) =>
-                          value!.isEmpty ? 'Vui lòng nhập điểm đi' : null,
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
-                  controller: _arrivalCityController,
+                  controller: TextEditingController(
+                    text: _departureAirportName ?? '',
+                  ),
+                  readOnly: true,
                   decoration: InputDecoration(
-                    labelText: 'Điểm đến',
+                    labelText: 'Tên sân bay đi',
                     labelStyle: const TextStyle(
                       color: AppColors.grey,
                       fontFamily: 'Montserrat',
@@ -208,12 +293,6 @@ class _FlightFormState extends State<FlightForm> {
                         color: AppColors.white.withOpacity(0.3),
                       ),
                     ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(
-                        color: AppColors.primaryColor,
-                      ),
-                    ),
                     fillColor: const Color(0xFF1E1E1E),
                     filled: true,
                   ),
@@ -221,15 +300,15 @@ class _FlightFormState extends State<FlightForm> {
                     color: AppColors.white,
                     fontFamily: 'Montserrat',
                   ),
-                  validator:
-                      (value) =>
-                          value!.isEmpty ? 'Vui lòng nhập điểm đến' : null,
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
-                  controller: _departureCodeController,
+                  controller: TextEditingController(
+                    text: _departureAirportCode ?? '',
+                  ),
+                  readOnly: true,
                   decoration: InputDecoration(
-                    labelText: 'Mã điểm đi',
+                    labelText: 'Mã sân bay đi',
                     labelStyle: const TextStyle(
                       color: AppColors.grey,
                       fontFamily: 'Montserrat',
@@ -240,12 +319,6 @@ class _FlightFormState extends State<FlightForm> {
                         color: AppColors.white.withOpacity(0.3),
                       ),
                     ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(
-                        color: AppColors.primaryColor,
-                      ),
-                    ),
                     fillColor: const Color(0xFF1E1E1E),
                     filled: true,
                   ),
@@ -253,15 +326,97 @@ class _FlightFormState extends State<FlightForm> {
                     color: AppColors.white,
                     fontFamily: 'Montserrat',
                   ),
-                  validator:
-                      (value) =>
-                          value!.isEmpty ? 'Vui lòng nhập mã điểm đi' : null,
+                ),
+                const SizedBox(height: 12),
+                Theme(
+                  data: Theme.of(
+                    context,
+                  ).copyWith(canvasColor: const Color(0xFF1E1E1E)),
+                  child: DropdownButtonFormField<String>(
+                    value: _arrivalCity,
+                    decoration: InputDecoration(
+                      labelText: 'Điểm đến',
+                      labelStyle: const TextStyle(
+                        color: AppColors.grey,
+                        fontFamily: 'Montserrat',
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: AppColors.white.withOpacity(0.3),
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(
+                          color: AppColors.primaryColor,
+                        ),
+                      ),
+                      fillColor: const Color(0xFF1E1E1E),
+                      filled: true,
+                    ),
+                    style: const TextStyle(
+                      color: AppColors.white,
+                      fontFamily: 'Montserrat',
+                    ),
+                    dropdownColor: const Color(0xFF1E1E1E),
+                    items:
+                        _cities
+                            .map(
+                              (city) => DropdownMenuItem(
+                                value: city['name'],
+                                child: Text(
+                                  city['name']!,
+                                  style: const TextStyle(
+                                    color: AppColors.white,
+                                    fontFamily: 'Montserrat',
+                                  ),
+                                ),
+                              ),
+                            )
+                            .toList(),
+                    onChanged: (value) {
+                      if (value == _departureCity) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Điểm đến và điểm đi không được trùng nhau',
+                            ),
+                            backgroundColor: const Color(0xFF1E1E1E),
+                          ),
+                        );
+                        return;
+                      }
+                      setState(() {
+                        _arrivalCity = value;
+                        final city = _cities.firstWhere(
+                          (c) => c['name'] == value,
+                          orElse:
+                              () => {
+                                'airportName': 'Unknown',
+                                'airportCode': 'Unknown',
+                              },
+                        );
+                        _arrivalAirportName = city['airportName'];
+                        _arrivalAirportCode = city['airportCode'];
+                      });
+                      print(
+                        'Selected arrival city: $_arrivalCity, airport: $_arrivalAirportName, code: $_arrivalAirportCode',
+                      );
+                    },
+                    validator:
+                        (value) =>
+                            value == null ? 'Vui lòng chọn điểm đến' : null,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
-                  controller: _arrivalCodeController,
+                  controller: TextEditingController(
+                    text: _arrivalAirportName ?? '',
+                  ),
+                  readOnly: true,
                   decoration: InputDecoration(
-                    labelText: 'Mã điểm đến',
+                    labelText: 'Tên sân bay đến',
                     labelStyle: const TextStyle(
                       color: AppColors.grey,
                       fontFamily: 'Montserrat',
@@ -272,10 +427,30 @@ class _FlightFormState extends State<FlightForm> {
                         color: AppColors.white.withOpacity(0.3),
                       ),
                     ),
-                    focusedBorder: OutlineInputBorder(
+                    fillColor: const Color(0xFF1E1E1E),
+                    filled: true,
+                  ),
+                  style: const TextStyle(
+                    color: AppColors.white,
+                    fontFamily: 'Montserrat',
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: TextEditingController(
+                    text: _arrivalAirportCode ?? '',
+                  ),
+                  readOnly: true,
+                  decoration: InputDecoration(
+                    labelText: 'Mã sân bay đến',
+                    labelStyle: const TextStyle(
+                      color: AppColors.grey,
+                      fontFamily: 'Montserrat',
+                    ),
+                    enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(
-                        color: AppColors.primaryColor,
+                      borderSide: BorderSide(
+                        color: AppColors.white.withOpacity(0.3),
                       ),
                     ),
                     fillColor: const Color(0xFF1E1E1E),
@@ -285,9 +460,6 @@ class _FlightFormState extends State<FlightForm> {
                     color: AppColors.white,
                     fontFamily: 'Montserrat',
                   ),
-                  validator:
-                      (value) =>
-                          value!.isEmpty ? 'Vui lòng nhập mã điểm đến' : null,
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
@@ -329,7 +501,9 @@ class _FlightFormState extends State<FlightForm> {
                   title: Text(
                     _departureTime == null
                         ? 'Chọn thời gian khởi hành'
-                        : _departureTime!.toIso8601String(),
+                        : DateFormat(
+                          'dd/MM/yyyy HH:mm',
+                        ).format(_departureTime!),
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: AppColors.white,
                       fontSize: 16,
@@ -351,7 +525,7 @@ class _FlightFormState extends State<FlightForm> {
                   title: Text(
                     _arrivalTime == null
                         ? 'Chọn thời gian đến'
-                        : _arrivalTime!.toIso8601String(),
+                        : DateFormat('dd/MM/yyyy HH:mm').format(_arrivalTime!),
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: AppColors.white,
                       fontSize: 16,
@@ -373,18 +547,41 @@ class _FlightFormState extends State<FlightForm> {
                   onPressed: () {
                     if (_formKey.currentState!.validate() &&
                         _departureTime != null &&
-                        _arrivalTime != null) {
+                        _arrivalTime != null &&
+                        _departureCity != null &&
+                        _arrivalCity != null &&
+                        _departureAirportName != null &&
+                        _arrivalAirportName != null &&
+                        _departureAirportCode != null &&
+                        _arrivalAirportCode != null) {
+                      if (_departureCity == _arrivalCity) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Điểm đi và điểm đến không được trùng nhau',
+                            ),
+                            backgroundColor: const Color(0xFF1E1E1E),
+                          ),
+                        );
+                        return;
+                      }
                       final flight = FlightModel(
-                        id: _flightIdController.text,
+                        id:
+                            _flightIdController.text.isEmpty
+                                ? 'AUTO_${DateTime.now().millisecondsSinceEpoch}'
+                                : _flightIdController.text,
                         documentId: widget.flight?.documentId ?? '',
-                        departureCity: _departureCityController.text,
-                        arrivalCity: _arrivalCityController.text,
-                        departureCode: _departureCodeController.text,
-                        arrivalCode: _arrivalCodeController.text,
+                        departureCity: _departureCity!,
+                        arrivalCity: _arrivalCity!,
+                        departureAirportName: _departureAirportName!,
+                        arrivalAirportName: _arrivalAirportName!,
+                        departureAirportCode: _departureAirportCode!,
+                        arrivalAirportCode: _arrivalAirportCode!,
                         departureTime: _departureTime!,
                         arrivalTime: _arrivalTime!,
                         price: double.parse(_priceController.text),
                       );
+                      print('Submitting flight: ${flight.toJson()}');
                       context.read<AdminFlightBloc>().add(
                         widget.flight == null
                             ? AddFlight(flight)

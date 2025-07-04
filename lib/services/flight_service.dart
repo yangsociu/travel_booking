@@ -1,5 +1,3 @@
-// services/flight_service.dart
-// Dịch vụ lấy dữ liệu từ Firestore
 import 'package:booking_app/models/passenger.dart';
 import 'package:booking_app/models/ticket.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -8,22 +6,47 @@ import 'package:booking_app/models/destination_model.dart';
 import 'package:booking_app/models/flight_model.dart';
 import 'package:booking_app/models/flight_search_model.dart';
 
+class City {
+  final String name;
+  final String airportName;
+  final String airportCode;
+
+  City({
+    required this.name,
+    required this.airportName,
+    required this.airportCode,
+  });
+
+  factory City.fromJson(Map<String, dynamic> json) {
+    return City(
+      name: json['name'] as String,
+      airportName: json['airportName'] as String,
+      airportCode: json['airportCode'] as String,
+    );
+  }
+}
+
 class FlightService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Future<List<String>> getCities() async {
+  Future<List<Map<String, String>>> getCities() async {
     try {
       final snapshot = await _firestore.collection('cities').get();
-      final cities = snapshot.docs.map((doc) => doc['name'] as String).toList();
-      print('Firestore cities fetched: ${snapshot.docs.length} documents');
-      return snapshot.docs.map((doc) {
-        final data = doc.data();
-        print('Document data: $data');
-        return data['name'] as String;
-      }).toList();
+      final cities =
+          snapshot.docs.map((doc) {
+            final data = doc.data();
+            print('Document data: $data');
+            return {
+              'name': data['name'] as String,
+              'airportName': data['airportName'] as String,
+              'airportCode': data['airportCode'] as String,
+            };
+          }).toList();
+      print('Firestore cities fetched: ${cities.length} documents');
+      return cities;
     } catch (e) {
       print('Error fetching cities: $e');
-      return []; // Trả về danh sách rỗng nếu lỗi
+      return [];
     }
   }
 
@@ -110,14 +133,12 @@ class FlightService {
               searchData.returnDate!.isBefore(searchData.departureDate!))) {
         throw Exception('Ngày về phải sau ngày đi');
       }
-      // Giả lập độ trễ để kiểm tra logic
       await Future.delayed(const Duration(seconds: 2));
     } catch (e) {
       throw Exception('Lỗi khi tìm kiếm chuyến bay: $e');
     }
   }
 
-  // Tạo document ID tăng dần và thêm chuyến bay
   Future<String> _generateFlightId() async {
     final metadataRef = _firestore.collection('metadata').doc('flight_counter');
     return await _firestore.runTransaction<String>((transaction) async {
@@ -139,8 +160,10 @@ class FlightService {
       documentId: newFlightId,
       departureCity: flight.departureCity,
       arrivalCity: flight.arrivalCity,
-      departureCode: flight.departureCode,
-      arrivalCode: flight.arrivalCode,
+      departureAirportName: flight.departureAirportName,
+      arrivalAirportName: flight.arrivalAirportName,
+      departureAirportCode: flight.departureAirportCode,
+      arrivalAirportCode: flight.arrivalAirportCode,
       departureTime: flight.departureTime,
       arrivalTime: flight.arrivalTime,
       price: flight.price,
@@ -169,7 +192,6 @@ class FlightService {
     await docRef.delete();
   }
 
-  //đặt ghé
   Future<Map<String, bool>> getSeats(String flightId) async {
     try {
       final snapshot =
@@ -182,7 +204,6 @@ class FlightService {
       for (var doc in snapshot.docs) {
         seats[doc.id] = doc['isBooked'] as bool;
       }
-      // Khởi tạo ghế mặc định nếu chưa có
       final defaultSeats = {
         '1A': false,
         '1B': false,
@@ -272,20 +293,20 @@ class FlightService {
     required Passenger passenger,
     required String seat,
     required double ticketPrice,
-    required String phoneNumber, // thêm dòng này
+    required String phoneNumber,
     required String email,
   }) async {
     try {
       final ticket = Ticket(
-        id: '', // Firestore sẽ tự sinh ID
+        id: '',
         flight: flight,
         passenger: passenger,
         seat: seat,
         ticketPrice: ticketPrice,
         bookingTime: DateTime.now(),
         documentId: '',
-        phoneNumber: phoneNumber, // <-- Truyền đúng giá trị
-        email: email, // <-- Truyền đúng giá trị
+        phoneNumber: phoneNumber,
+        email: email,
       );
       await _firestore.collection('tickets').add(ticket.toJson());
       print('Ticket booked for flight: ${flight.id}, seat: $seat');

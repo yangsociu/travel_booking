@@ -5,7 +5,11 @@ import 'package:booking_app/models/flight_search_model.dart';
 
 class FlightSearchState extends Equatable {
   final String? departureCity;
+  final String? departureAirportName; // Thêm trường tên sân bay điểm đi
+  final String? departureAirportCode; // Thêm trường mã sân bay điểm đi
   final String? arrivalCity;
+  final String? arrivalAirportName; // Thêm trường tên sân bay điểm đến
+  final String? arrivalAirportCode; // Thêm trường mã sân bay điểm đến
   final DateTime? departureDate;
   final DateTime? returnDate;
   final int passengerCount;
@@ -16,7 +20,11 @@ class FlightSearchState extends Equatable {
 
   const FlightSearchState({
     this.departureCity,
+    this.departureAirportName,
+    this.departureAirportCode,
     this.arrivalCity,
+    this.arrivalAirportName,
+    this.arrivalAirportCode,
     this.departureDate,
     this.returnDate,
     this.passengerCount = 1,
@@ -28,7 +36,11 @@ class FlightSearchState extends Equatable {
 
   FlightSearchState copyWith({
     String? departureCity,
+    String? departureAirportName,
+    String? departureAirportCode,
     String? arrivalCity,
+    String? arrivalAirportName,
+    String? arrivalAirportCode,
     DateTime? departureDate,
     DateTime? returnDate,
     int? passengerCount,
@@ -39,7 +51,11 @@ class FlightSearchState extends Equatable {
   }) {
     return FlightSearchState(
       departureCity: departureCity ?? this.departureCity,
+      departureAirportName: departureAirportName ?? this.departureAirportName,
+      departureAirportCode: departureAirportCode ?? this.departureAirportCode,
       arrivalCity: arrivalCity ?? this.arrivalCity,
+      arrivalAirportName: arrivalAirportName ?? this.arrivalAirportName,
+      arrivalAirportCode: arrivalAirportCode ?? this.arrivalAirportCode,
       departureDate: departureDate ?? this.departureDate,
       returnDate: returnDate ?? this.returnDate,
       passengerCount: passengerCount ?? this.passengerCount,
@@ -68,13 +84,19 @@ class FlightSearchState extends Equatable {
       returnDate: returnDate,
       passengerCount: passengerCount,
       isRoundTrip: isRoundTrip,
+      departureAirportCode: departureAirportCode, // Thêm mã sân bay
+      arrivalAirportCode: arrivalAirportCode, // Thêm mã sân bay
     );
   }
 
   @override
   List<Object?> get props => [
     departureCity,
+    departureAirportName,
+    departureAirportCode,
     arrivalCity,
+    arrivalAirportName,
+    arrivalAirportCode,
     departureDate,
     returnDate,
     passengerCount,

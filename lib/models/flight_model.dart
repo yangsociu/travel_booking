@@ -5,8 +5,10 @@ class FlightModel extends Equatable {
   final String documentId;
   final String departureCity;
   final String arrivalCity;
-  final String departureCode;
-  final String arrivalCode;
+  final String departureAirportName;
+  final String arrivalAirportName;
+  final String departureAirportCode;
+  final String arrivalAirportCode;
   final DateTime departureTime;
   final DateTime arrivalTime;
   final double price;
@@ -16,8 +18,10 @@ class FlightModel extends Equatable {
     required this.documentId,
     required this.departureCity,
     required this.arrivalCity,
-    required this.departureCode,
-    required this.arrivalCode,
+    required this.departureAirportName,
+    required this.arrivalAirportName,
+    required this.departureAirportCode,
+    required this.arrivalAirportCode,
     required this.departureTime,
     required this.arrivalTime,
     required this.price,
@@ -25,15 +29,19 @@ class FlightModel extends Equatable {
 
   factory FlightModel.fromJson(Map<String, dynamic> json, String documentId) {
     return FlightModel(
-      id: (json['id'] as String?) ?? documentId, // Dùng documentId làm mặc định
+      id: (json['id'] as String?) ?? documentId,
       documentId: documentId,
       departureCity: (json['departureCity'] as String?) ?? 'Unknown',
       arrivalCity: (json['arrivalCity'] as String?) ?? 'Unknown',
-      departureCode: (json['departureCode'] as String?) ?? 'Unknown',
-      arrivalCode: (json['arrivalCode'] as String?) ?? 'Unknown',
+      departureAirportName:
+          (json['departureAirportName'] as String?) ?? 'Unknown',
+      arrivalAirportName: (json['arrivalAirportName'] as String?) ?? 'Unknown',
+      departureAirportCode:
+          (json['departureAirportCode'] as String?) ?? 'Unknown',
+      arrivalAirportCode: (json['arrivalAirportCode'] as String?) ?? 'Unknown',
       departureTime:
           json['departureTime'] != null
-              ? DateTime.tryParse(json['arrivalTime'] as String? ?? '') ??
+              ? DateTime.tryParse(json['departureTime'] as String? ?? '') ??
                   DateTime.now()
               : DateTime.now(),
       arrivalTime:
@@ -51,8 +59,10 @@ class FlightModel extends Equatable {
       'documentId': documentId,
       'departureCity': departureCity,
       'arrivalCity': arrivalCity,
-      'departureCode': departureCode,
-      'arrivalCode': arrivalCode,
+      'departureAirportName': departureAirportName,
+      'arrivalAirportName': arrivalAirportName,
+      'departureAirportCode': departureAirportCode,
+      'arrivalAirportCode': arrivalAirportCode,
       'departureTime': departureTime.toIso8601String(),
       'arrivalTime': arrivalTime.toIso8601String(),
       'price': price.toString(),
@@ -65,8 +75,10 @@ class FlightModel extends Equatable {
     documentId,
     departureCity,
     arrivalCity,
-    departureCode,
-    arrivalCode,
+    departureAirportName,
+    arrivalAirportName,
+    departureAirportCode,
+    arrivalAirportCode,
     departureTime,
     arrivalTime,
     price,

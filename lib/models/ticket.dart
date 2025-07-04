@@ -12,7 +12,6 @@ class Ticket extends Equatable {
   final DateTime bookingTime;
   final String phoneNumber; // Thêm để nhận diện vé khứ hồi
   final String email; // Thêm để nhận diện vé khứ hồi
-  final bool isUsed; // Thêm trường isUsed
 
   const Ticket({
     required this.id,
@@ -24,7 +23,6 @@ class Ticket extends Equatable {
     required this.bookingTime,
     required this.phoneNumber,
     required this.email,
-    this.isUsed = false, // Mặc định là chưa sử dụng
   });
 
   factory Ticket.fromJson(Map<String, dynamic> json, String docId) {
@@ -47,7 +45,6 @@ class Ticket extends Equatable {
           DateTime.now(),
       phoneNumber: json['phoneNumber'] as String? ?? '',
       email: json['email'] as String? ?? '',
-      isUsed: json['isUsed'] ?? false, // Lấy giá trị isUsed từ JSON
     );
   }
 
@@ -60,7 +57,6 @@ class Ticket extends Equatable {
       'bookingTime': bookingTime.toIso8601String(),
       'phoneNumber': phoneNumber,
       'email': email,
-      'isUsed': isUsed, // Thêm isUsed vào JSON
     };
   }
 
@@ -75,6 +71,5 @@ class Ticket extends Equatable {
     bookingTime,
     phoneNumber,
     email,
-    isUsed,
   ];
 }

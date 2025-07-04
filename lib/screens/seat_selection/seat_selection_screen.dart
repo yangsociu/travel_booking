@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import 'package:booking_app/blocs/seat_selection/seat_bloc.dart';
 import 'package:booking_app/blocs/seat_selection/seat_event.dart';
 import 'package:booking_app/blocs/seat_selection/seat_state.dart';
@@ -43,26 +44,65 @@ class SeatSelectionScreen extends StatelessWidget {
           title: const Text(
             'Chọn chỗ ngồi',
             style: TextStyle(
-              color: AppColors.white,
+              color: AppColors.black,
               fontFamily: 'Montserrat',
-              fontSize: 24,
-              fontWeight: FontWeight.w700,
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
             ),
           ),
           centerTitle: true,
-          backgroundColor: AppColors.primaryColor,
+          backgroundColor: AppColors.white,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: AppColors.white),
+            icon: const Icon(Icons.arrow_back, color: AppColors.black),
             onPressed: () => Navigator.pop(context),
           ),
         ),
         body: BlocBuilder<SeatBloc, SeatState>(
           builder: (context, state) {
             if (state is SeatLoading) {
-              return const Center(child: CircularProgressIndicator());
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        AppColors.primaryColor,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Đang tải ghế...',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontSize: 16,
+                        color: AppColors.black,
+                      ),
+                    ),
+                  ],
+                ),
+              );
             } else if (state is SeatError) {
-              return Center(child: Text(state.message));
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.error_outline,
+                      size: 48,
+                      color: AppColors.primaryColor,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Lỗi: ${state.message}',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontSize: 16,
+                        color: AppColors.black,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              );
             }
             final seats = state is SeatLoaded ? state.seats : <String, bool>{};
             final selectedSeats =
@@ -75,20 +115,31 @@ class SeatSelectionScreen extends StatelessWidget {
             return SingleChildScrollView(
               padding: const EdgeInsets.all(16.0),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Thông tin chuyến đi
-                  _buildFlightInfo(context, flight, selectedSeats, 'Chuyến đi'),
-                  const SizedBox(height: 8),
                   Text(
-                    'Đã chọn: ${selectedSeats.length}/${passengers.length} ghế',
-                    style: const TextStyle(
-                      color: AppColors.black,
+                    'Chuyến đi',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontFamily: 'Montserrat',
-                      fontSize: 14,
+                      fontSize: 18,
                       fontWeight: FontWeight.w600,
+                      color: AppColors.black,
                     ),
-                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  _buildFlightInfo(context, flight, selectedSeats),
+                  const SizedBox(height: 8),
+                  Center(
+                    child: Text(
+                      'Đã chọn: ${selectedSeats.length}/${passengers.length} ghế',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: AppColors.black,
+                        fontFamily: 'Montserrat',
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 20),
                   SeatGridWidget(
@@ -116,22 +167,32 @@ class SeatSelectionScreen extends StatelessWidget {
                   ),
                   if (returnFlight != null) ...[
                     const SizedBox(height: 20),
+                    Text(
+                      'Chuyến về',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontFamily: 'Montserrat',
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.black,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
                     _buildFlightInfo(
                       context,
                       returnFlight!,
                       returnSelectedSeats,
-                      'Chuyến về',
                     ),
                     const SizedBox(height: 8),
-                    Text(
-                      'Đã chọn: ${returnSelectedSeats.length}/${passengers.length} ghế',
-                      style: const TextStyle(
-                        color: AppColors.black,
-                        fontFamily: 'Montserrat',
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
+                    Center(
+                      child: Text(
+                        'Đã chọn: ${returnSelectedSeats.length}/${passengers.length} ghế',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: AppColors.black,
+                          fontFamily: 'Montserrat',
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                      textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 20),
                     SeatGridWidget(
@@ -255,51 +316,122 @@ class SeatSelectionScreen extends StatelessWidget {
     BuildContext context,
     FlightModel flight,
     List<String> selectedSeats,
-    String title,
   ) {
+    final timeFormat = DateFormat('h:mm a');
+    final departureTime = timeFormat.format(flight.departureTime);
+    final arrivalTime = timeFormat.format(flight.arrivalTime);
+
     return Container(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.primaryColor,
-        borderRadius: BorderRadius.circular(16),
+        gradient: LinearGradient(
+          colors: [AppColors.white, AppColors.primaryColor.withOpacity(0.05)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.grey.withOpacity(0.2)),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.grey.withOpacity(0.1),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Column(
-            children: List.generate(passengers.length, (index) {
-              return Text(
-                passengers[index].fullName,
-                style: const TextStyle(
-                  color: AppColors.white,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    Icons.flight_takeoff,
+                    size: 20,
+                    color: AppColors.primaryColor,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    '${flight.departureCity} (${flight.departureAirportName})',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontFamily: 'Montserrat',
+                      fontSize: 14,
+                      color: AppColors.black,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text(
+                flight.departureAirportCode,
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   fontFamily: 'Montserrat',
                   fontSize: 18,
+                  color: AppColors.black,
                   fontWeight: FontWeight.w600,
                 ),
-                textAlign: TextAlign.center,
-              );
-            }),
+              ),
+              Text(
+                departureTime,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontFamily: 'Montserrat',
+                  fontSize: 14,
+                  color: AppColors.black,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 8),
-          Text(
-            title,
-            style: const TextStyle(
-              color: AppColors.white,
-              fontFamily: 'Montserrat',
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-            ),
+          Icon(
+            Icons.flight,
+            size: 24,
+            color: AppColors.primaryColor.withOpacity(0.7),
           ),
-          const SizedBox(height: 8),
-          Text(
-            '${flight.departureCity} (${flight.departureCode}) -> ${flight.arrivalCity} (${flight.arrivalCode}) (${flight.id})',
-            style: const TextStyle(
-              color: AppColors.white,
-              fontFamily: 'Montserrat',
-              fontSize: 14,
-              fontWeight: FontWeight.w400,
-            ),
-            textAlign: TextAlign.center,
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Row(
+                children: [
+                  Text(
+                    '${flight.arrivalCity} (${flight.arrivalAirportName})',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontFamily: 'Montserrat',
+                      fontSize: 14,
+                      color: AppColors.black,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Icon(
+                    Icons.flight_land,
+                    size: 20,
+                    color: AppColors.primaryColor,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text(
+                flight.arrivalAirportCode,
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  fontFamily: 'Montserrat',
+                  fontSize: 18,
+                  color: AppColors.black,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              Text(
+                arrivalTime,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontFamily: 'Montserrat',
+                  fontSize: 14,
+                  color: AppColors.black,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
           ),
         ],
       ),

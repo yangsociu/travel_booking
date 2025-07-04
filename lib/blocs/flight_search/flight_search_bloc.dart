@@ -44,10 +44,25 @@ class FlightSearchBloc extends Bloc<FlightSearchEvent, FlightSearchState> {
     Emitter<FlightSearchState> emit,
   ) {
     if (event.isDeparture) {
-      emit(state.copyWith(departureCity: event.selectedCity));
+      emit(
+        state.copyWith(
+          departureCity: event.selectedCity['name'],
+          departureAirportName: event.selectedCity['airportName'],
+          departureAirportCode: event.selectedCity['airportCode'],
+        ),
+      );
     } else {
-      emit(state.copyWith(arrivalCity: event.selectedCity));
+      emit(
+        state.copyWith(
+          arrivalCity: event.selectedCity['name'],
+          arrivalAirportName: event.selectedCity['airportName'],
+          arrivalAirportCode: event.selectedCity['airportCode'],
+        ),
+      );
     }
+    print(
+      'Handling ShowCityPicker event: ${event.isDeparture ? "Departure" : "Arrival"} city selected: ${event.selectedCity['name']}',
+    ); // Debug log
   }
 
   void _onShowPassengerPicker(
@@ -78,6 +93,10 @@ class FlightSearchBloc extends Bloc<FlightSearchEvent, FlightSearchState> {
       state.copyWith(
         departureCity: state.arrivalCity,
         arrivalCity: state.departureCity,
+        departureAirportName: state.arrivalAirportName,
+        departureAirportCode: state.arrivalAirportCode,
+        arrivalAirportName: state.departureAirportName,
+        arrivalAirportCode: state.departureAirportCode,
       ),
     );
   }

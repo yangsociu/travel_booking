@@ -99,46 +99,9 @@ class TicketListItem extends StatelessWidget {
             const Divider(color: AppColors.grey, height: 1),
             const SizedBox(height: 12),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment:
+                  MainAxisAlignment.end, // Chỉ giữ nút Xóa ở bên phải
               children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AppColors.grey.withOpacity(0.3)),
-                  ),
-                  child: Row(
-                    children: [
-                      Switch(
-                        value: ticket.isUsed,
-                        onChanged: (value) {
-                          context.read<AdminBookingBloc>().add(
-                            UpdateTicketStatus(ticket.documentId, value),
-                          );
-                        },
-                        activeColor: AppColors.primaryColor,
-                        activeTrackColor: AppColors.primaryColor.withOpacity(
-                          0.5,
-                        ),
-                        inactiveThumbColor: AppColors.grey,
-                        inactiveTrackColor: AppColors.grey.withOpacity(0.3),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        ticket.isUsed ? 'Đã sử dụng' : 'Chưa sử dụng',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontSize: 14,
-                          color: AppColors.white.withOpacity(0.95),
-                          fontFamily: 'Montserrat',
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
                 TextButton(
                   onPressed: () async {
                     final confirm = await showDialog<bool>(

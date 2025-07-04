@@ -1,4 +1,3 @@
-// blocs/admin_flight/admin_flight_bloc.dart
 import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:booking_app/models/flight_model.dart';
@@ -87,7 +86,7 @@ class AdminFlightBloc extends Bloc<AdminFlightEvent, AdminFlightState> {
       if (state is AdminFlightLoaded) {
         final updatedFlights =
             (state as AdminFlightLoaded).flights
-                .where((f) => f.id != event.flightId)
+                .where((f) => f.documentId != event.flightId)
                 .toList();
         emit(AdminFlightLoaded(flights: updatedFlights));
       } else {

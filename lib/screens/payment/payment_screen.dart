@@ -110,17 +110,17 @@ class _PaymentScreenState extends State<PaymentScreen> {
             title: const Text(
               'Thanh Toán',
               style: TextStyle(
-                color: AppColors.white,
+                color: AppColors.black,
                 fontFamily: 'Montserrat',
-                fontSize: 24,
-                fontWeight: FontWeight.w700,
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
               ),
             ),
             centerTitle: true,
-            backgroundColor: AppColors.primaryColor,
+            backgroundColor: AppColors.white,
             elevation: 0,
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: AppColors.white),
+              icon: const Icon(Icons.arrow_back, color: AppColors.black),
               onPressed: () => Navigator.pop(context),
             ),
           ),
@@ -129,6 +129,16 @@ class _PaymentScreenState extends State<PaymentScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Text(
+                  'Thông tin vé',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontFamily: 'Montserrat',
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.black,
+                  ),
+                ),
+                const SizedBox(height: 8),
                 TicketInfoWidget(
                   flight: widget.flight,
                   returnFlight: widget.returnFlight,
@@ -138,59 +148,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   phoneNumber: widget.phoneNumber,
                   email: widget.email,
                 ),
-                const SizedBox(height: 20),
-                const Text(
-                  'Phương thức thanh toán',
-                  style: TextStyle(
-                    color: AppColors.primaryColor,
-                    fontFamily: 'Montserrat',
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                PaymentMethodTile(
-                  icon: Icons.credit_card,
-                  title: 'Thanh toán qua thẻ',
-                  isSelected: _selectedPaymentMethod == 'Card',
-                  onTap: () {
-                    setState(() {
-                      _selectedPaymentMethod = 'Card';
-                    });
-                  },
-                ),
-                PaymentMethodTile(
-                  icon: Icons.account_balance,
-                  title: 'Chuyển khoản ngân hàng',
-                  isSelected: _selectedPaymentMethod == 'Bank',
-                  onTap: () {
-                    setState(() {
-                      _selectedPaymentMethod = 'Bank';
-                    });
-                  },
-                ),
-                PaymentMethodTile(
-                  icon: Icons.account_balance_wallet,
-                  title: 'Ví điện tử MoMo',
-                  isSelected: _selectedPaymentMethod == 'MoMo',
-                  onTap: () {
-                    setState(() {
-                      _selectedPaymentMethod = 'MoMo';
-                    });
-                  },
-                ),
-                if (_selectedPaymentMethod == 'Card') ...[
-                  const SizedBox(height: 20),
-                  PaymentForm(
-                    flight: widget.flight,
-                    returnFlight: widget.returnFlight,
-                    passengers: widget.passengers,
-                    selectedSeats: widget.selectedSeats,
-                    returnSelectedSeats: widget.returnSelectedSeats,
-                    phoneNumber: widget.phoneNumber,
-                    email: widget.email,
-                  ),
-                ],
                 const SizedBox(height: 20),
                 Container(
                   padding: const EdgeInsets.all(16.0),
@@ -267,62 +224,90 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF1976D2), Color(0xFF42A5F5)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: ElevatedButton(
-                    onPressed:
-                        _selectedPaymentMethod == null
-                            ? null
-                            : () {
-                              if (_selectedPaymentMethod != 'Card') {
-                                context.read<PaymentBloc>().add(
-                                  StartPayment(
-                                    flight: widget.flight,
-                                    returnFlight: widget.returnFlight,
-                                    passengers: widget.passengers,
-                                    selectedSeats: widget.selectedSeats,
-                                    returnSelectedSeats:
-                                        widget.returnSelectedSeats,
-                                    phoneNumber: widget.phoneNumber,
-                                    email: widget.email,
-                                    cardType: '',
-                                    cardNumber: '',
-                                    cardHolder: '',
-                                    expiryDate: '',
-                                    cvv: '',
-                                  ),
-                                );
-                              }
-                            },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.transparent,
-                      foregroundColor: AppColors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 0,
-                    ),
-                    child: const Text(
-                      'Xác nhận',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontFamily: 'Montserrat',
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.white,
-                      ),
-                    ),
+                const Text(
+                  'Phương thức thanh toán',
+                  style: TextStyle(
+                    color: AppColors.primaryColor,
+                    fontFamily: 'Montserrat',
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
+                const SizedBox(height: 12),
+                PaymentMethodTile(
+                  icon: Icons.credit_card,
+                  title: 'Thanh toán qua thẻ',
+                  isSelected: _selectedPaymentMethod == 'Card',
+                  onTap: () {
+                    setState(() {
+                      _selectedPaymentMethod = 'Card';
+                    });
+                  },
+                ),
+                PaymentMethodTile(
+                  icon: Icons.account_balance,
+                  title: 'Chuyển khoản ngân hàng',
+                  isSelected: _selectedPaymentMethod == 'Bank',
+                  onTap: () {
+                    setState(() {
+                      _selectedPaymentMethod = 'Bank';
+                    });
+                    context.read<PaymentBloc>().add(
+                      StartPayment(
+                        flight: widget.flight,
+                        returnFlight: widget.returnFlight,
+                        passengers: widget.passengers,
+                        selectedSeats: widget.selectedSeats,
+                        returnSelectedSeats: widget.returnSelectedSeats,
+                        phoneNumber: widget.phoneNumber,
+                        email: widget.email,
+                        cardType: '',
+                        cardNumber: '',
+                        cardHolder: '',
+                        expiryDate: '',
+                        cvv: '',
+                      ),
+                    );
+                  },
+                ),
+                PaymentMethodTile(
+                  icon: Icons.account_balance_wallet,
+                  title: 'Ví điện tử MoMo',
+                  isSelected: _selectedPaymentMethod == 'MoMo',
+                  onTap: () {
+                    setState(() {
+                      _selectedPaymentMethod = 'MoMo';
+                    });
+                    context.read<PaymentBloc>().add(
+                      StartPayment(
+                        flight: widget.flight,
+                        returnFlight: widget.returnFlight,
+                        passengers: widget.passengers,
+                        selectedSeats: widget.selectedSeats,
+                        returnSelectedSeats: widget.returnSelectedSeats,
+                        phoneNumber: widget.phoneNumber,
+                        email: widget.email,
+                        cardType: '',
+                        cardNumber: '',
+                        cardHolder: '',
+                        expiryDate: '',
+                        cvv: '',
+                      ),
+                    );
+                  },
+                ),
+                if (_selectedPaymentMethod == 'Card') ...[
+                  const SizedBox(height: 20),
+                  PaymentForm(
+                    flight: widget.flight,
+                    returnFlight: widget.returnFlight,
+                    passengers: widget.passengers,
+                    selectedSeats: widget.selectedSeats,
+                    returnSelectedSeats: widget.returnSelectedSeats,
+                    phoneNumber: widget.phoneNumber,
+                    email: widget.email,
+                  ),
+                ],
               ],
             ),
           ),
@@ -354,102 +339,228 @@ class TicketInfoWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final timeFormat = DateFormat('h:mm a');
+    final departureTime = timeFormat.format(flight.departureTime);
+    final arrivalTime = timeFormat.format(flight.arrivalTime);
+
     return Container(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.primaryColor,
+        gradient: LinearGradient(
+          colors: [AppColors.white, AppColors.primaryColor.withOpacity(0.05)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.grey.withOpacity(0.2)),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.grey.withOpacity(0.1),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Thông tin chuyến đi
+          // Chuyến đi
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Icon(
-                CupertinoIcons.airplane,
-                color: AppColors.white,
-                size: 24,
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '${flight.departureCity} (${flight.departureCode}) -> ${flight.arrivalCity} (${flight.arrivalCode})',
-                      style: const TextStyle(
-                        color: AppColors.white,
-                        fontFamily: 'Montserrat',
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Thời gian đặt: ${DateFormat('HH:mm dd MMM yyyy').format(DateTime.now())}',
-                      style: const TextStyle(
-                        color: AppColors.white,
-                        fontFamily: 'Montserrat',
-                        fontSize: 14,
-                      ),
-                    ),
-                    Text(
-                      'Thời gian bay: ${DateFormat('HH:mm dd MMM yyyy').format(flight.departureTime)}',
-                      style: const TextStyle(
-                        color: AppColors.white,
-                        fontFamily: 'Montserrat',
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          // Thông tin chuyến về (nếu có)
-          if (returnFlight != null) ...[
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                const Icon(
-                  CupertinoIcons.airplane,
-                  color: AppColors.white,
-                  size: 24,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
                     children: [
-                      Text(
-                        'Chuyến về: ${returnFlight!.departureCity} (${returnFlight!.departureCode}) -> ${returnFlight!.arrivalCity} (${returnFlight!.arrivalCode})',
-                        style: const TextStyle(
-                          color: AppColors.white,
-                          fontFamily: 'Montserrat',
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
+                      Icon(
+                        Icons.flight_takeoff,
+                        size: 20,
+                        color: AppColors.primaryColor,
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(width: 8),
                       Text(
-                        'Thời gian đặt: ${DateFormat('HH:mm dd MMM yyyy').format(DateTime.now())}',
-                        style: const TextStyle(
-                          color: AppColors.white,
+                        '${flight.departureCity} (${flight.departureAirportName})',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           fontFamily: 'Montserrat',
                           fontSize: 14,
-                        ),
-                      ),
-                      Text(
-                        'Thời gian bay: ${DateFormat('HH:mm dd MMM yyyy').format(returnFlight!.departureTime)}',
-                        style: const TextStyle(
-                          color: AppColors.white,
-                          fontFamily: 'Montserrat',
-                          fontSize: 14,
+                          color: AppColors.black,
+                          fontWeight: FontWeight.w400,
                         ),
                       ),
                     ],
                   ),
+                  const SizedBox(height: 4),
+                  Text(
+                    flight.departureAirportCode,
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      fontFamily: 'Montserrat',
+                      fontSize: 18,
+                      color: AppColors.black,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Text(
+                    departureTime,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontFamily: 'Montserrat',
+                      fontSize: 14,
+                      color: AppColors.black,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+              Icon(
+                Icons.flight,
+                size: 24,
+                color: AppColors.primaryColor.withOpacity(0.7),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        '${flight.arrivalCity} (${flight.arrivalAirportName})',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontFamily: 'Montserrat',
+                          fontSize: 14,
+                          color: AppColors.black,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Icon(
+                        Icons.flight_land,
+                        size: 20,
+                        color: AppColors.primaryColor,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    flight.arrivalAirportCode,
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      fontFamily: 'Montserrat',
+                      fontSize: 18,
+                      color: AppColors.black,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Text(
+                    arrivalTime,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontFamily: 'Montserrat',
+                      fontSize: 14,
+                      color: AppColors.black,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          if (returnFlight != null) ...[
+            const SizedBox(height: 16),
+            // Chuyến về
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.flight_takeoff,
+                          size: 20,
+                          color: AppColors.primaryColor,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '${returnFlight!.departureCity} (${returnFlight!.departureAirportName})',
+                          style: Theme.of(
+                            context,
+                          ).textTheme.bodyMedium?.copyWith(
+                            fontFamily: 'Montserrat',
+                            fontSize: 14,
+                            color: AppColors.black,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      returnFlight!.departureAirportCode,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        fontFamily: 'Montserrat',
+                        fontSize: 18,
+                        color: AppColors.black,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Text(
+                      timeFormat.format(returnFlight!.departureTime),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontFamily: 'Montserrat',
+                        fontSize: 14,
+                        color: AppColors.black,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+                Icon(
+                  Icons.flight,
+                  size: 24,
+                  color: AppColors.primaryColor.withOpacity(0.7),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          '${returnFlight!.arrivalCity} (${returnFlight!.arrivalAirportName})',
+                          style: Theme.of(
+                            context,
+                          ).textTheme.bodyMedium?.copyWith(
+                            fontFamily: 'Montserrat',
+                            fontSize: 14,
+                            color: AppColors.black,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Icon(
+                          Icons.flight_land,
+                          size: 20,
+                          color: AppColors.primaryColor,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      returnFlight!.arrivalAirportCode,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        fontFamily: 'Montserrat',
+                        fontSize: 18,
+                        color: AppColors.black,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Text(
+                      timeFormat.format(returnFlight!.arrivalTime),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontFamily: 'Montserrat',
+                        fontSize: 14,
+                        color: AppColors.black,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -458,37 +569,41 @@ class TicketInfoWidget extends StatelessWidget {
           const Text(
             'Hành khách & ghế:',
             style: TextStyle(
-              color: AppColors.white,
               fontFamily: 'Montserrat',
               fontSize: 16,
+              color: AppColors.black,
               fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: 8),
           Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: List.generate(
               passengers.length,
               (index) => Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Chuyến đi: ${passengers[index].fullName} (${selectedSeats[index]})',
-                    style: const TextStyle(
-                      color: AppColors.white,
+                    '${passengers[index].fullName}: Ghế ${selectedSeats[index]}',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       fontFamily: 'Montserrat',
                       fontSize: 14,
+                      color: AppColors.black,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                   if (returnFlight != null &&
                       index < returnSelectedSeats.length)
                     Text(
-                      'Chuyến về: ${passengers[index].fullName} (${returnSelectedSeats[index]})',
-                      style: const TextStyle(
-                        color: AppColors.white,
+                      'Chuyến về: Ghế ${returnSelectedSeats[index]}',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         fontFamily: 'Montserrat',
                         fontSize: 14,
+                        color: AppColors.black,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
+                  const SizedBox(height: 4),
                 ],
               ),
             ),
@@ -496,18 +611,20 @@ class TicketInfoWidget extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             'Liên hệ: $phoneNumber',
-            style: const TextStyle(
-              color: AppColors.white,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               fontFamily: 'Montserrat',
               fontSize: 14,
+              color: AppColors.black,
+              fontWeight: FontWeight.w500,
             ),
           ),
           Text(
             'Email: $email',
-            style: const TextStyle(
-              color: AppColors.white,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               fontFamily: 'Montserrat',
               fontSize: 14,
+              color: AppColors.black,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],

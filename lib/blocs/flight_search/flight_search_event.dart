@@ -30,7 +30,7 @@ class SelectDate extends FlightSearchEvent {
 
 class ShowCityPicker extends FlightSearchEvent {
   final bool isDeparture;
-  final String selectedCity;
+  final Map<String, String> selectedCity;
 
   const ShowCityPicker({required this.isDeparture, required this.selectedCity});
 

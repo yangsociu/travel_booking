@@ -41,7 +41,7 @@ class SeatGridWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
-        color: AppColors.grey_2,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -65,13 +65,13 @@ class SeatGridWidget extends StatelessWidget {
               ),
               _buildLegendItem(
                 Icons.event_seat,
-                AppColors.grey_2,
+                AppColors.grey,
                 AppColors.primaryColor,
                 'Đang chọn',
               ),
               _buildLegendItem(
                 Icons.event_seat,
-                AppColors.grey,
+                Colors.yellow[700]!,
                 null,
                 'Đã đặt',
               ),
@@ -80,17 +80,8 @@ class SeatGridWidget extends StatelessWidget {
           const SizedBox(height: 16),
           // Hạng thương gia
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: const [
-              Text(
-                'Cửa lên máy bay',
-                style: TextStyle(
-                  color: AppColors.black,
-                  fontFamily: 'Montserrat',
-                  fontSize: 12,
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
               Text(
                 'Cửa lên máy bay',
                 style: TextStyle(
@@ -176,9 +167,9 @@ class SeatGridWidget extends StatelessWidget {
                                   decoration: BoxDecoration(
                                     color:
                                         isBooked
-                                            ? AppColors.grey
+                                            ? Colors.yellow[700]
                                             : (isSelected
-                                                ? AppColors.grey_2
+                                                ? AppColors.grey
                                                 : AppColors.white),
                                     border: Border.all(
                                       color: AppColors.primaryColor,
@@ -190,7 +181,7 @@ class SeatGridWidget extends StatelessWidget {
                                     Icons.event_seat,
                                     color:
                                         isBooked
-                                            ? AppColors.white
+                                            ? AppColors.black
                                             : AppColors.primaryColor,
                                     size: 24,
                                   ),
@@ -278,9 +269,9 @@ class SeatGridWidget extends StatelessWidget {
                                   decoration: BoxDecoration(
                                     color:
                                         isBooked
-                                            ? AppColors.grey
+                                            ? Colors.yellow[700]
                                             : (isSelected
-                                                ? AppColors.grey_2
+                                                ? AppColors.grey
                                                 : AppColors.white),
                                     border: Border.all(
                                       color: AppColors.primaryColor,
@@ -292,7 +283,7 @@ class SeatGridWidget extends StatelessWidget {
                                     Icons.event_seat,
                                     color:
                                         isBooked
-                                            ? AppColors.white
+                                            ? AppColors.black
                                             : AppColors.primaryColor,
                                     size: 24,
                                   ),

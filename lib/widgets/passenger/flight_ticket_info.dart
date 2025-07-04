@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:booking_app/models/flight_model.dart';
 import 'package:booking_app/utils/app_colors.dart';
@@ -5,7 +6,7 @@ import 'package:intl/intl.dart';
 
 class FlightTicketInfo extends StatelessWidget {
   final FlightModel flight;
-  final int passengerCount; // Thêm dòng này
+  final int passengerCount;
 
   const FlightTicketInfo({
     super.key,
@@ -14,12 +15,27 @@ class FlightTicketInfo extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(context) {
+    final dateFormat = DateFormat('dd/MM/yyyy');
+    final timeFormat = DateFormat('HH:mm');
+
     return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 8.0),
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
-        color: AppColors.primaryColor,
-        borderRadius: BorderRadius.circular(12),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF1976D2), Color(0xFF42A5F5)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.grey.withOpacity(0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         children: [
@@ -27,68 +43,63 @@ class FlightTicketInfo extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                flight.departureCode,
+                flight.departureAirportCode,
                 style: const TextStyle(
                   color: AppColors.white,
                   fontFamily: 'Montserrat',
-                  fontSize: 24,
-                  fontWeight: FontWeight.w600,
+                  fontSize: 28,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
-              Expanded(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Image.asset(
-                      'assets/icons/flight_selection_screen/ph_dot-duotone.png',
-                      width: 28,
-                      height: 28,
-                      color: AppColors.white,
-                    ),
-                    Container(height: 2, width: 80, color: AppColors.white),
-                    Image.asset(
-                      'assets/icons/flight_selection_screen/weui_location-outlined.png',
-                      width: 16,
-                      height: 16,
-                      color: AppColors.white,
-                    ),
-                  ],
-                ),
+              Row(
+                children: [
+                  const Icon(
+                    CupertinoIcons.airplane,
+                    size: 24,
+                    color: AppColors.white,
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    width: 60,
+                    height: 2,
+                    color: AppColors.white.withOpacity(0.7),
+                  ),
+                ],
               ),
               Text(
-                flight.arrivalCode,
+                flight.arrivalAirportCode,
                 style: const TextStyle(
                   color: AppColors.white,
                   fontFamily: 'Montserrat',
-                  fontSize: 24,
-                  fontWeight: FontWeight.w600,
+                  fontSize: 28,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          Text(
-            DateFormat('HH:mm dd MMM yyyy').format(flight.departureTime),
-            style: const TextStyle(
-              color: AppColors.white,
-              fontFamily: 'Montserrat',
-              fontSize: 14,
-              fontWeight: FontWeight.w400,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
-          const Divider(color: AppColors.white, thickness: 1),
-          const SizedBox(height: 8),
-          Text(
-            '$passengerCount hành khách',
-            style: const TextStyle(
-              color: AppColors.white,
-              fontFamily: 'Montserrat',
-              fontSize: 14,
-              fontWeight: FontWeight.w400,
-            ),
-            textAlign: TextAlign.center,
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                dateFormat.format(flight.departureTime),
+                style: const TextStyle(
+                  color: AppColors.white,
+                  fontFamily: 'Montserrat',
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              Text(
+                timeFormat.format(flight.departureTime),
+                style: const TextStyle(
+                  color: AppColors.white,
+                  fontFamily: 'Montserrat',
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
           ),
         ],
       ),
