@@ -44,6 +44,7 @@ class TicketService {
                   DateTime.now(),
               phoneNumber: data['phoneNumber'] as String? ?? '',
               email: data['email'] as String? ?? '',
+              isUsed: data['isUsed'] as bool? ?? false, // Thêm isUsed
             );
           })
           .whereType<Ticket>() // Chỉ giữ lại các vé hợp lệ
@@ -62,6 +63,19 @@ class TicketService {
     } catch (e) {
       print('Error in deleteTicket: $e');
       throw Exception('Lỗi khi xóa vé: $e');
+    }
+  }
+
+  Future<void> updateTicketStatus(String documentId, bool isUsed) async {
+    try {
+      print(
+        'Updating ticket status for documentId: $documentId to isUsed: $isUsed',
+      );
+      await _ticketsCollection.doc(documentId).update({'isUsed': isUsed});
+      print('Ticket status updated successfully');
+    } catch (e) {
+      print('Error in updateTicketStatus: $e');
+      throw Exception('Lỗi khi cập nhật trạng thái vé: $e');
     }
   }
 }

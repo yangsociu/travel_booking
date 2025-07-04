@@ -1,6 +1,3 @@
-// home_screen.dart
-// screens/home/home_screen.dart
-// Trang Home
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:booking_app/blocs/home/home_bloc.dart';
@@ -63,20 +60,16 @@ class HomeScreen extends StatelessWidget {
                 context.read<HomeBloc>().add(SelectBottomNav(index));
                 switch (index) {
                   case 0:
-                    // Ở lại Home
+                    // Ở lại HomeScreen
                     break;
                   case 1:
                     Navigator.pushNamed(context, AppRoutes.dateSelection);
                     break;
                   case 2:
-                    // TODO: Điều hướng đến trang Map
+                    Navigator.pushNamed(context, AppRoutes.ticketHistory);
                     break;
                   case 3:
-                    // TODO: Điều hướng đến trang Profile
-                    Navigator.pushNamed(
-                      context,
-                      AppRoutes.profile,
-                    ); // Điều hướng đến Profile
+                    Navigator.pushNamed(context, AppRoutes.profile);
                     break;
                 }
               },

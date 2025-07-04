@@ -12,6 +12,9 @@ class AppRoutes {
   static const String payment = '/payment';
   static const String paymentSuccess = '/payment_success';
   static const String adminLogin = '/admin_login';
+  static const String adminDashboard = '/admin_dashboard';
   static const String adminFlightManagement = '/adminFlightManagement';
   static const String adminBookingManagement = '/adminBookingManagement';
+  static const String adminProfile = '/admin_profile';
+  static const String ticketHistory = '/ticket_history';
 }

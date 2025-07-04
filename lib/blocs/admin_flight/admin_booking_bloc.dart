@@ -13,6 +13,7 @@ class AdminBookingBloc extends Bloc<AdminBookingEvent, AdminBookingState> {
   AdminBookingBloc(this.ticketService) : super(AdminBookingLoading()) {
     on<LoadTickets>(_onLoadTickets);
     on<DeleteTicket>(_onDeleteTicket);
+    on<UpdateTicketStatus>(_onUpdateTicketStatus); // Thêm sự kiện mới
   }
 
   Future<void> _onLoadTickets(
@@ -34,6 +35,18 @@ class AdminBookingBloc extends Bloc<AdminBookingEvent, AdminBookingState> {
   ) async {
     try {
       await ticketService.deleteTicket(event.documentId);
+      emit(AdminBookingLoaded(await ticketService.getAllTickets()));
+    } catch (e) {
+      emit(AdminBookingError(e.toString()));
+    }
+  }
+
+  Future<void> _onUpdateTicketStatus(
+    UpdateTicketStatus event,
+    Emitter<AdminBookingState> emit,
+  ) async {
+    try {
+      await ticketService.updateTicketStatus(event.documentId, event.isUsed);
       emit(AdminBookingLoaded(await ticketService.getAllTickets()));
     } catch (e) {
       emit(AdminBookingError(e.toString()));

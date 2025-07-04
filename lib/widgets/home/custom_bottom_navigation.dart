@@ -1,5 +1,3 @@
-// widgets/home/custom_bottom_navigation.dart
-// Widget thanh điều hướng dưới
 import 'package:flutter/material.dart';
 import 'package:booking_app/utils/app_colors.dart';
 import 'package:flutter/cupertino.dart';
@@ -27,22 +25,23 @@ class CustomBottomNavigation extends StatelessWidget {
       height: 60.0,
       color: AppColors.primaryColor,
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: List.generate(items.length, (index) {
-          return GestureDetector(
+          return InkWell(
             onTap: () => onTap(index),
+            splashColor: AppColors.white.withOpacity(0.3),
+            borderRadius: BorderRadius.circular(12.0),
             child: Container(
               padding: const EdgeInsets.all(8.0),
               decoration: BoxDecoration(
                 color:
                     currentIndex == index
-                        ? Colors.white.withOpacity(0.2)
+                        ? AppColors.white.withOpacity(0.1)
                         : Colors.transparent,
-                borderRadius: BorderRadius.circular(8.0),
+                borderRadius: BorderRadius.circular(12.0),
               ),
               child: Icon(
-                items[index]['icon']
-                    as IconData, // Ép kiểu rõ ràng để tránh lỗi
+                items[index]['icon'] as IconData,
                 size: items[index]['size'] as double,
                 color: AppColors.white,
               ),

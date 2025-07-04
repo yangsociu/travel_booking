@@ -1,5 +1,5 @@
-// admin_flight_management_screen.dart
 import 'package:booking_app/routes/app_routes.dart';
+import 'package:booking_app/widgets/admin/bottom_navigation_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:booking_app/blocs/admin_flight/admin_flight_bloc.dart';
@@ -29,209 +29,283 @@ class AdminFlightManagementScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print('Building AdminFlightManagementScreen');
     return BlocListener<AdminFlightBloc, AdminFlightState>(
       listener: (context, state) {
         print('BlocListener received state: $state');
         if (state is AdminFlightError) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('Lỗi: ${state.message}')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              backgroundColor: const Color(0xFF1E1E1E),
+              content: Text(
+                'Lỗi: ${state.message}',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppColors.white,
+                  fontFamily: 'Montserrat',
+                ),
+              ),
+            ),
+          );
         } else if (state is AdminFlightLoaded) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Cập nhật danh sách chuyến bay thành công'),
+            SnackBar(
+              backgroundColor: const Color(0xFF1E1E1E),
+              content: Text(
+                'Cập nhật danh sách chuyến bay thành công',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppColors.white,
+                  fontFamily: 'Montserrat',
+                ),
+              ),
             ),
           );
         }
       },
       child: Scaffold(
-        backgroundColor: AppColors.grey,
-        appBar: AppBar(
-          title: Text(
-            'Quản lý chuyến bay',
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: AppColors.black,
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          centerTitle: true,
-          backgroundColor: AppColors.grey,
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: AppColors.black),
-            onPressed: () {
-              print('Navigating back from AdminFlightManagementScreen');
-              Navigator.pop(context);
-            },
-          ),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.add, color: AppColors.black),
-              onPressed: () {
-                print('Opening FlightForm for adding new flight');
-                showModalBottomSheet(
-                  context: context,
-                  isScrollControlled: true,
-                  builder:
-                      (modalContext) => BlocProvider.value(
-                        value: context.read<AdminFlightBloc>(),
-                        child: const FlightForm(),
-                      ),
-                );
-              },
-            ),
-            IconButton(
-              icon: const Icon(Icons.airplane_ticket, color: AppColors.black),
-              tooltip: 'Quản lý vé đặt',
-              onPressed: () {
-                print('Navigating to AdminBookingManagementScreen');
-                Navigator.pushNamed(context, AppRoutes.adminBookingManagement);
-              },
-            ),
-            IconButton(
-              icon: const Icon(Icons.logout, color: AppColors.black),
-              tooltip: 'Đăng xuất',
-              onPressed: () async {
-                await FirebaseAuth.instance.signOut();
-                if (context.mounted) {
-                  Navigator.pushNamedAndRemoveUntil(
-                    context,
-                    '/login', // hoặc AppRoutes.login nếu bạn dùng hằng số
-                    (route) => false,
-                  );
-                }
-              },
-            ),
-          ],
+        floatingActionButton: FloatingActionButton(
+          backgroundColor: AppColors.primaryColor,
+          onPressed: () {
+            print('Opening FlightForm for adding new flight');
+            showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              backgroundColor: Colors.transparent,
+              builder:
+                  (modalContext) => BlocProvider.value(
+                    value: context.read<AdminFlightBloc>(),
+                    child: const FlightForm(),
+                  ),
+            );
+          },
+          child: const Icon(Icons.add, color: AppColors.white),
         ),
-        body: BlocBuilder<AdminFlightBloc, AdminFlightState>(
-          builder: (context, state) {
-            print('BlocBuilder received state: $state');
-            if (state is AdminFlightLoading) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (state is AdminFlightLoaded) {
-              return Padding(
-                padding: const EdgeInsets.all(16.0),
-                child:
-                    state.flights.isEmpty
-                        ? Center(
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Color(0xFF121212), Color(0xFF1E1E1E)],
+            ),
+          ),
+          child: SafeArea(
+            child: Column(
+              children: [
+                AppBar(
+                  title: Text(
+                    'Quản lý chuyến bay',
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: AppColors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'Montserrat',
+                    ),
+                  ),
+                  centerTitle: true,
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: BlocBuilder<AdminFlightBloc, AdminFlightState>(
+                      builder: (context, state) {
+                        print('BlocBuilder received state: $state');
+                        if (state is AdminFlightLoading) {
+                          return const Center(
+                            child: CircularProgressIndicator(
+                              color: AppColors.primaryColor,
+                            ),
+                          );
+                        } else if (state is AdminFlightLoaded) {
+                          return state.flights.isEmpty
+                              ? Center(
+                                child: Text(
+                                  'Không có chuyến bay nào.',
+                                  style: Theme.of(
+                                    context,
+                                  ).textTheme.bodyMedium?.copyWith(
+                                    fontSize: 16,
+                                    color: AppColors.white,
+                                    fontFamily: 'Montserrat',
+                                  ),
+                                ),
+                              )
+                              : RefreshIndicator(
+                                color: AppColors.primaryColor,
+                                onRefresh: () async {
+                                  context.read<AdminFlightBloc>().add(
+                                    LoadFlights(),
+                                  );
+                                },
+                                child: ListView.builder(
+                                  itemCount: state.flights.length,
+                                  itemBuilder: (context, index) {
+                                    return FlightListItem(
+                                      flight: state.flights[index],
+                                      onEdit: () {
+                                        print(
+                                          'Opening FlightForm for editing flight: ${state.flights[index].id}',
+                                        );
+                                        showModalBottomSheet(
+                                          context: context,
+                                          isScrollControlled: true,
+                                          backgroundColor: Colors.transparent,
+                                          builder:
+                                              (modalContext) =>
+                                                  BlocProvider.value(
+                                                    value:
+                                                        context
+                                                            .read<
+                                                              AdminFlightBloc
+                                                            >(),
+                                                    child: FlightForm(
+                                                      flight:
+                                                          state.flights[index],
+                                                    ),
+                                                  ),
+                                        );
+                                      },
+                                      onDelete: () async {
+                                        final confirm = await showDialog<bool>(
+                                          context: context,
+                                          builder:
+                                              (dialogContext) => AlertDialog(
+                                                backgroundColor: const Color(
+                                                  0xFF1E1E1E,
+                                                ),
+                                                title: Text(
+                                                  'Xác nhận xóa',
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .bodyLarge
+                                                      ?.copyWith(
+                                                        color: AppColors.white,
+                                                        fontFamily:
+                                                            'Montserrat',
+                                                      ),
+                                                ),
+                                                content: Text(
+                                                  'Bạn có chắc chắn muốn xóa chuyến bay này?',
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .bodyMedium
+                                                      ?.copyWith(
+                                                        color: AppColors.white,
+                                                        fontFamily:
+                                                            'Montserrat',
+                                                      ),
+                                                ),
+                                                actions: [
+                                                  TextButton(
+                                                    onPressed:
+                                                        () => Navigator.of(
+                                                          dialogContext,
+                                                        ).pop(false),
+                                                    child: Text(
+                                                      'Hủy',
+                                                      style: Theme.of(context)
+                                                          .textTheme
+                                                          .bodyMedium
+                                                          ?.copyWith(
+                                                            color:
+                                                                AppColors.grey,
+                                                            fontFamily:
+                                                                'Montserrat',
+                                                          ),
+                                                    ),
+                                                  ),
+                                                  TextButton(
+                                                    onPressed:
+                                                        () => Navigator.of(
+                                                          dialogContext,
+                                                        ).pop(true),
+                                                    child: Text(
+                                                      'Xóa',
+                                                      style: Theme.of(context)
+                                                          .textTheme
+                                                          .bodyMedium
+                                                          ?.copyWith(
+                                                            color:
+                                                                Colors
+                                                                    .redAccent,
+                                                            fontFamily:
+                                                                'Montserrat',
+                                                          ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                        );
+                                        if (confirm == true) {
+                                          context.read<AdminFlightBloc>().add(
+                                            DeleteFlight(
+                                              state.flights[index].documentId,
+                                            ),
+                                          );
+                                          context.read<AdminFlightBloc>().add(
+                                            LoadFlights(),
+                                          );
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            SnackBar(
+                                              backgroundColor: const Color(
+                                                0xFF1E1E1E,
+                                              ),
+                                              content: Text(
+                                                'Xóa chuyến bay thành công',
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .bodyMedium
+                                                    ?.copyWith(
+                                                      color: AppColors.white,
+                                                      fontFamily: 'Montserrat',
+                                                    ),
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                      },
+                                    );
+                                  },
+                                ),
+                              );
+                        } else if (state is AdminFlightError) {
+                          return Center(
+                            child: Text(
+                              'Lỗi: ${state.message}',
+                              style: Theme.of(
+                                context,
+                              ).textTheme.bodyMedium?.copyWith(
+                                fontSize: 16,
+                                color: AppColors.white,
+                                fontFamily: 'Montserrat',
+                              ),
+                            ),
+                          );
+                        }
+                        return Center(
                           child: Text(
-                            'Không có chuyến bay nào.',
+                            'Khởi tạo...',
                             style: Theme.of(
                               context,
                             ).textTheme.bodyMedium?.copyWith(
                               fontSize: 16,
-                              color: AppColors.black,
+                              color: AppColors.white,
+                              fontFamily: 'Montserrat',
                             ),
                           ),
-                        )
-                        : RefreshIndicator(
-                          onRefresh: () async {
-                            context.read<AdminFlightBloc>().add(LoadFlights());
-                          },
-                          child: ListView.builder(
-                            itemCount: state.flights.length,
-                            itemBuilder: (context, index) {
-                              return FlightListItem(
-                                flight: state.flights[index],
-                                onEdit: () {
-                                  print(
-                                    'Opening FlightForm for editing flight: ${state.flights[index].id}',
-                                  );
-                                  showModalBottomSheet(
-                                    context: context,
-                                    isScrollControlled: true,
-                                    builder:
-                                        (modalContext) => BlocProvider.value(
-                                          value:
-                                              context.read<AdminFlightBloc>(),
-                                          child: FlightForm(
-                                            flight: state.flights[index],
-                                          ),
-                                        ),
-                                  );
-                                },
-                                onDelete: () async {
-                                  final confirm = await showDialog<bool>(
-                                    context: context,
-                                    builder:
-                                        (dialogContext) => AlertDialog(
-                                          title: const Text('Xác nhận xóa'),
-                                          content: const Text(
-                                            'Bạn có chắc chắn muốn xóa chuyến bay này?',
-                                          ),
-                                          actions: [
-                                            TextButton(
-                                              onPressed:
-                                                  () => Navigator.of(
-                                                    dialogContext,
-                                                  ).pop(false),
-                                              child: const Text('Hủy'),
-                                            ),
-                                            TextButton(
-                                              onPressed:
-                                                  () => Navigator.of(
-                                                    dialogContext,
-                                                  ).pop(true),
-                                              child: const Text(
-                                                'Xóa',
-                                                style: TextStyle(
-                                                  color: Colors.red,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                  );
-                                  if (confirm == true) {
-                                    context.read<AdminFlightBloc>().add(
-                                      DeleteFlight(
-                                        state.flights[index].documentId,
-                                      ),
-                                    );
-                                    // Gọi lại LoadFlights để cập nhật UI
-                                    context.read<AdminFlightBloc>().add(
-                                      LoadFlights(),
-                                    );
-                                    // Hiển thị thông báo xóa thành công
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                          'Xóa chuyến bay thành công',
-                                        ),
-                                      ),
-                                    );
-                                  }
-                                },
-                              );
-                            },
-                          ),
-                        ),
-              );
-            } else if (state is AdminFlightError) {
-              return Center(
-                child: Text(
-                  'Lỗi: ${state.message}',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontSize: 16,
-                    color: AppColors.black,
+                        );
+                      },
+                    ),
                   ),
                 ),
-              );
-            }
-            return Center(
-              child: Text(
-                'Khởi tạo...',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontSize: 16,
-                  color: AppColors.black,
-                ),
-              ),
-            );
-          },
+              ],
+            ),
+          ),
         ),
+        bottomNavigationBar: const BottomNavigationWidget(
+          currentIndex: 1,
+        ), // Chuyến bay\
       ),
     );
   }

@@ -1,11 +1,13 @@
-// routes/app_router.dart
 import 'package:booking_app/screens/admin/admin_booking_management_screen.dart';
+import 'package:booking_app/screens/admin/admin_dashboard_screen.dart';
+import 'package:booking_app/screens/admin/admin_profile_screen.dart';
 import 'package:booking_app/screens/profile/profile_screen.dart';
 import 'package:booking_app/services/flight_service.dart';
 import 'package:flutter/material.dart';
 import 'package:booking_app/screens/auth/login_screen.dart';
 import 'package:booking_app/screens/auth/register_screen.dart';
 import 'package:booking_app/screens/home/home_screen.dart';
+import 'package:booking_app/screens/ticket_history/ticket_history_screen.dart';
 import 'package:booking_app/screens/flight_selection/date_selection_screen.dart';
 import 'package:booking_app/screens/flight_selection/flight_selection_screen.dart';
 import 'package:booking_app/screens/seat_selection/seat_selection_screen.dart';
@@ -97,17 +99,27 @@ class AppRouter {
                 duration: args?['duration'] as String,
               ),
         );
+      case AppRoutes.adminDashboard:
+        return MaterialPageRoute(
+          builder: (_) => const AdminDashboardScreenWrapper(),
+        );
+      case AppRoutes.adminProfile:
+        return MaterialPageRoute(builder: (_) => const AdminProfileScreen());
       case AppRoutes.adminFlightManagement:
         return MaterialPageRoute(
           builder: (_) => const AdminFlightManagementScreenWrapper(),
         );
-      case AppRoutes.profile:
-        return MaterialPageRoute(
-          builder: (_) => ProfileScreen(flightService: FlightService()),
-        );
       case AppRoutes.adminBookingManagement:
         return MaterialPageRoute(
           builder: (_) => const AdminBookingManagementScreenWrapper(),
+        );
+      case AppRoutes.ticketHistory:
+        return MaterialPageRoute(
+          builder: (_) => TicketHistoryScreen(flightService: FlightService()),
+        );
+      case AppRoutes.profile:
+        return MaterialPageRoute(
+          builder: (_) => ProfileScreen(flightService: FlightService()),
         );
       default:
         return MaterialPageRoute(

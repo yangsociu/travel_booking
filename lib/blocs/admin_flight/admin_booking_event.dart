@@ -18,3 +18,13 @@ class DeleteTicket extends AdminBookingEvent {
   @override
   List<Object> get props => [documentId];
 }
+
+class UpdateTicketStatus extends AdminBookingEvent {
+  final String documentId;
+  final bool isUsed;
+
+  const UpdateTicketStatus(this.documentId, this.isUsed);
+
+  @override
+  List<Object> get props => [documentId, isUsed];
+}

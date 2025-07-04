@@ -28,6 +28,7 @@ class MyApp extends StatelessWidget {
         Provider<FlightService>(create: (_) => FlightService()),
       ],
       child: MaterialApp(
+        debugShowCheckedModeBanner: false,
         title: 'Flight Booking App',
         theme: appTheme(),
         initialRoute: AppRoutes.login,

@@ -1,4 +1,3 @@
-// flight_form.dart
 import 'package:flutter/material.dart';
 import 'package:booking_app/models/flight_model.dart';
 import 'package:booking_app/utils/app_colors.dart';
@@ -95,200 +94,343 @@ class _FlightFormState extends State<FlightForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(
-        left: 16,
-        right: 16,
-        top: 16,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFF121212), Color(0xFF1E1E1E)],
+        ),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      child: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                widget.flight == null ? 'Thêm chuyến bay' : 'Sửa chuyến bay',
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.black,
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _flightIdController,
-                decoration: InputDecoration(
-                  labelText: 'Mã chuyến bay',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                validator: (value) {
-                  if (widget.flight == null &&
-                      (value == null || value.isEmpty)) {
-                    return 'Vui lòng nhập mã chuyến bay hoặc để trống để tự động tạo';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _departureCityController,
-                decoration: InputDecoration(
-                  labelText: 'Điểm đi',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                validator:
-                    (value) => value!.isEmpty ? 'Vui lòng nhập điểm đi' : null,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _arrivalCityController,
-                decoration: InputDecoration(
-                  labelText: 'Điểm đến',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                validator:
-                    (value) => value!.isEmpty ? 'Vui lòng nhập điểm đến' : null,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _departureCodeController,
-                decoration: InputDecoration(
-                  labelText: 'Mã điểm đi',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                validator:
-                    (value) =>
-                        value!.isEmpty ? 'Vui lòng nhập mã điểm đi' : null,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _arrivalCodeController,
-                decoration: InputDecoration(
-                  labelText: 'Mã điểm đến',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                validator:
-                    (value) =>
-                        value!.isEmpty ? 'Vui lòng nhập mã điểm đến' : null,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _priceController,
-                decoration: InputDecoration(
-                  labelText: 'Giá vé',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                keyboardType: TextInputType.number,
-                validator:
-                    (value) =>
-                        value!.isEmpty || double.tryParse(value) == null
-                            ? 'Vui lòng nhập giá hợp lệ'
-                            : null,
-              ),
-              const SizedBox(height: 12),
-              ListTile(
-                title: Text(
-                  _departureTime == null
-                      ? 'Chọn thời gian khởi hành'
-                      : _departureTime!.toIso8601String(),
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.black,
-                    fontSize: 16,
-                  ),
-                ),
-                trailing: const Icon(
-                  Icons.calendar_today,
-                  color: AppColors.black,
-                ),
-                onTap: () => _selectDateTime(context, true),
-              ),
-              const SizedBox(height: 12),
-              ListTile(
-                title: Text(
-                  _arrivalTime == null
-                      ? 'Chọn thời gian đến'
-                      : _arrivalTime!.toIso8601String(),
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.black,
-                    fontSize: 16,
-                  ),
-                ),
-                trailing: const Icon(
-                  Icons.calendar_today,
-                  color: AppColors.black,
-                ),
-                onTap: () => _selectDateTime(context, false),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate() &&
-                      _departureTime != null &&
-                      _arrivalTime != null) {
-                    final flight = FlightModel(
-                      id:
-                          _flightIdController
-                              .text, // Mã chuyến bay từ người dùng
-                      documentId:
-                          widget.flight?.documentId ??
-                          '', // Để rỗng khi thêm mới
-                      departureCity: _departureCityController.text,
-                      arrivalCity: _arrivalCityController.text,
-                      departureCode: _departureCodeController.text,
-                      arrivalCode: _arrivalCodeController.text,
-                      departureTime: _departureTime!,
-                      arrivalTime: _arrivalTime!,
-                      price: double.parse(_priceController.text),
-                    );
-                    context.read<AdminFlightBloc>().add(
-                      widget.flight == null
-                          ? AddFlight(flight)
-                          : UpdateFlight(flight),
-                    );
-                    Navigator.pop(context);
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Vui lòng điền đầy đủ thông tin'),
-                      ),
-                    );
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryColor,
-                  foregroundColor: AppColors.white,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 32,
-                    vertical: 12,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                child: Text(
-                  widget.flight == null ? 'Thêm' : 'Cập nhật',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontSize: 16,
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: 16,
+          right: 16,
+          top: 16,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+        ),
+        child: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  widget.flight == null ? 'Thêm chuyến bay' : 'Sửa chuyến bay',
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    fontSize: 18,
                     fontWeight: FontWeight.w600,
                     color: AppColors.white,
+                    fontFamily: 'Montserrat',
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _flightIdController,
+                  decoration: InputDecoration(
+                    labelText: 'Mã chuyến bay',
+                    labelStyle: const TextStyle(
+                      color: AppColors.grey,
+                      fontFamily: 'Montserrat',
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: AppColors.white.withOpacity(0.3),
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(
+                        color: AppColors.primaryColor,
+                      ),
+                    ),
+                    fillColor: const Color(0xFF1E1E1E),
+                    filled: true,
+                  ),
+                  style: const TextStyle(
+                    color: AppColors.white,
+                    fontFamily: 'Montserrat',
+                  ),
+                  validator: (value) {
+                    if (widget.flight == null &&
+                        (value == null || value.isEmpty)) {
+                      return 'Vui lòng nhập mã chuyến bay hoặc để trống để tự động tạo';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _departureCityController,
+                  decoration: InputDecoration(
+                    labelText: 'Điểm đi',
+                    labelStyle: const TextStyle(
+                      color: AppColors.grey,
+                      fontFamily: 'Montserrat',
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: AppColors.white.withOpacity(0.3),
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(
+                        color: AppColors.primaryColor,
+                      ),
+                    ),
+                    fillColor: const Color(0xFF1E1E1E),
+                    filled: true,
+                  ),
+                  style: const TextStyle(
+                    color: AppColors.white,
+                    fontFamily: 'Montserrat',
+                  ),
+                  validator:
+                      (value) =>
+                          value!.isEmpty ? 'Vui lòng nhập điểm đi' : null,
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _arrivalCityController,
+                  decoration: InputDecoration(
+                    labelText: 'Điểm đến',
+                    labelStyle: const TextStyle(
+                      color: AppColors.grey,
+                      fontFamily: 'Montserrat',
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: AppColors.white.withOpacity(0.3),
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(
+                        color: AppColors.primaryColor,
+                      ),
+                    ),
+                    fillColor: const Color(0xFF1E1E1E),
+                    filled: true,
+                  ),
+                  style: const TextStyle(
+                    color: AppColors.white,
+                    fontFamily: 'Montserrat',
+                  ),
+                  validator:
+                      (value) =>
+                          value!.isEmpty ? 'Vui lòng nhập điểm đến' : null,
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _departureCodeController,
+                  decoration: InputDecoration(
+                    labelText: 'Mã điểm đi',
+                    labelStyle: const TextStyle(
+                      color: AppColors.grey,
+                      fontFamily: 'Montserrat',
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: AppColors.white.withOpacity(0.3),
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(
+                        color: AppColors.primaryColor,
+                      ),
+                    ),
+                    fillColor: const Color(0xFF1E1E1E),
+                    filled: true,
+                  ),
+                  style: const TextStyle(
+                    color: AppColors.white,
+                    fontFamily: 'Montserrat',
+                  ),
+                  validator:
+                      (value) =>
+                          value!.isEmpty ? 'Vui lòng nhập mã điểm đi' : null,
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _arrivalCodeController,
+                  decoration: InputDecoration(
+                    labelText: 'Mã điểm đến',
+                    labelStyle: const TextStyle(
+                      color: AppColors.grey,
+                      fontFamily: 'Montserrat',
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: AppColors.white.withOpacity(0.3),
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(
+                        color: AppColors.primaryColor,
+                      ),
+                    ),
+                    fillColor: const Color(0xFF1E1E1E),
+                    filled: true,
+                  ),
+                  style: const TextStyle(
+                    color: AppColors.white,
+                    fontFamily: 'Montserrat',
+                  ),
+                  validator:
+                      (value) =>
+                          value!.isEmpty ? 'Vui lòng nhập mã điểm đến' : null,
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _priceController,
+                  decoration: InputDecoration(
+                    labelText: 'Giá vé',
+                    labelStyle: const TextStyle(
+                      color: AppColors.grey,
+                      fontFamily: 'Montserrat',
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: AppColors.white.withOpacity(0.3),
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(
+                        color: AppColors.primaryColor,
+                      ),
+                    ),
+                    fillColor: const Color(0xFF1E1E1E),
+                    filled: true,
+                  ),
+                  style: const TextStyle(
+                    color: AppColors.white,
+                    fontFamily: 'Montserrat',
+                  ),
+                  keyboardType: TextInputType.number,
+                  validator:
+                      (value) =>
+                          value!.isEmpty || double.tryParse(value) == null
+                              ? 'Vui lòng nhập giá hợp lệ'
+                              : null,
+                ),
+                const SizedBox(height: 12),
+                ListTile(
+                  title: Text(
+                    _departureTime == null
+                        ? 'Chọn thời gian khởi hành'
+                        : _departureTime!.toIso8601String(),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppColors.white,
+                      fontSize: 16,
+                      fontFamily: 'Montserrat',
+                    ),
+                  ),
+                  trailing: const Icon(
+                    Icons.calendar_today,
+                    color: AppColors.white,
+                  ),
+                  onTap: () => _selectDateTime(context, true),
+                  tileColor: const Color(0xFF1E1E1E),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                ListTile(
+                  title: Text(
+                    _arrivalTime == null
+                        ? 'Chọn thời gian đến'
+                        : _arrivalTime!.toIso8601String(),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppColors.white,
+                      fontSize: 16,
+                      fontFamily: 'Montserrat',
+                    ),
+                  ),
+                  trailing: const Icon(
+                    Icons.calendar_today,
+                    color: AppColors.white,
+                  ),
+                  onTap: () => _selectDateTime(context, false),
+                  tileColor: const Color(0xFF1E1E1E),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () {
+                    if (_formKey.currentState!.validate() &&
+                        _departureTime != null &&
+                        _arrivalTime != null) {
+                      final flight = FlightModel(
+                        id: _flightIdController.text,
+                        documentId: widget.flight?.documentId ?? '',
+                        departureCity: _departureCityController.text,
+                        arrivalCity: _arrivalCityController.text,
+                        departureCode: _departureCodeController.text,
+                        arrivalCode: _arrivalCodeController.text,
+                        departureTime: _departureTime!,
+                        arrivalTime: _arrivalTime!,
+                        price: double.parse(_priceController.text),
+                      );
+                      context.read<AdminFlightBloc>().add(
+                        widget.flight == null
+                            ? AddFlight(flight)
+                            : UpdateFlight(flight),
+                      );
+                      Navigator.pop(context);
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          backgroundColor: const Color(0xFF1E1E1E),
+                          content: Text(
+                            'Vui lòng điền đầy đủ thông tin',
+                            style: Theme.of(
+                              context,
+                            ).textTheme.bodyMedium?.copyWith(
+                              color: AppColors.white,
+                              fontFamily: 'Montserrat',
+                            ),
+                          ),
+                        ),
+                      );
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryColor,
+                    foregroundColor: AppColors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 32,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    widget.flight == null ? 'Thêm' : 'Cập nhật',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.white,
+                      fontFamily: 'Montserrat',
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

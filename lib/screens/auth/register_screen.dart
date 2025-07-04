@@ -1,13 +1,10 @@
-// register_screen.dart
-// register_screen.dart
-// Trang đăng ký người dùng
-import 'package:booking_app/blocs/auth/auth_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:booking_app/blocs/auth/auth_bloc.dart';
+import 'package:booking_app/blocs/auth/auth_state.dart';
+import 'package:booking_app/routes/app_routes.dart';
 import 'package:booking_app/utils/app_colors.dart';
 import 'package:booking_app/widgets/auth/register_form.dart';
-import 'package:booking_app/routes/app_routes.dart';
 
 class RegisterScreen extends StatelessWidget {
   const RegisterScreen({super.key});
@@ -15,49 +12,34 @@ class RegisterScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Đăng Ký'), centerTitle: true),
-      body: BlocListener<AuthBloc, AuthState>(
-        listener: (context, state) {
-          if (state is AuthSuccess) {
-            // Show success SnackBar
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Đăng ký thành công!')),
-            );
-            // Then navigate
-            Navigator.pushReplacementNamed(context, AppRoutes.home);
-          } else if (state is AuthFailure) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(state.error)));
-          }
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text(
-                'Tạo tài khoản mới để đặt vé dễ dàng',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.black,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 20),
-              const RegisterForm(),
-              const SizedBox(height: 20),
-              TextButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, AppRoutes.login);
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFF2196F3), Color(0xFFFFFFFF)],
+          ),
+        ),
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: BlocListener<AuthBloc, AuthState>(
+                listener: (context, state) {
+                  if (state is AuthSuccess) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Đăng ký thành công!')),
+                    );
+                    Navigator.pushReplacementNamed(context, AppRoutes.home);
+                  } else if (state is AuthFailure) {
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(SnackBar(content: Text(state.error)));
+                  }
                 },
-                child: const Text(
-                  'Đã có tài khoản? Đăng nhập ngay',
-                  style: TextStyle(color: AppColors.primaryColor),
-                ),
+                child: const RegisterForm(),
               ),
-            ],
+            ),
           ),
         ),
       ),
