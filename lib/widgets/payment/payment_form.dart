@@ -18,6 +18,7 @@ class PaymentForm extends StatefulWidget {
   final List<String> returnSelectedSeats;
   final String phoneNumber;
   final String email;
+  final double discountPercentage;
 
   const PaymentForm({
     super.key,
@@ -28,6 +29,7 @@ class PaymentForm extends StatefulWidget {
     required this.returnSelectedSeats,
     required this.phoneNumber,
     required this.email,
+    required this.discountPercentage,
   });
 
   @override
@@ -151,6 +153,7 @@ class _PaymentFormState extends State<PaymentForm> {
                                   cardHolder: _cardHolderController.text,
                                   expiryDate: _expiryDateController.text,
                                   cvv: _cvvController.text,
+                                  discountPercentage: widget.discountPercentage,
                                 ),
                               );
                             }

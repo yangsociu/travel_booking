@@ -1,23 +1,25 @@
-import 'package:booking_app/screens/admin/admin_booking_management_screen.dart';
+import 'package:booking_app/screens/admin/admin_booking_management_screen.dart'
+    as booking;
 import 'package:booking_app/screens/admin/admin_dashboard_screen.dart';
-import 'package:booking_app/screens/admin/admin_profile_screen.dart';
-import 'package:booking_app/screens/profile/profile_screen.dart';
-import 'package:booking_app/services/flight_service.dart';
-import 'package:flutter/material.dart';
+import 'package:booking_app/screens/admin/add_discount_screen.dart';
+import 'package:booking_app/screens/admin/admin_flight_management_screen.dart'
+    as flight;
 import 'package:booking_app/screens/auth/login_screen.dart';
 import 'package:booking_app/screens/auth/register_screen.dart';
 import 'package:booking_app/screens/home/home_screen.dart';
 import 'package:booking_app/screens/ticket_history/ticket_history_screen.dart';
+import 'package:booking_app/screens/profile/profile_screen.dart';
 import 'package:booking_app/screens/flight_selection/date_selection_screen.dart';
 import 'package:booking_app/screens/flight_selection/flight_selection_screen.dart';
 import 'package:booking_app/screens/seat_selection/seat_selection_screen.dart';
 import 'package:booking_app/screens/payment/payment_screen.dart';
 import 'package:booking_app/screens/payment/payment_success_screen.dart';
-import 'package:booking_app/screens/admin/admin_flight_management_screen.dart';
-import 'package:booking_app/routes/app_routes.dart';
 import 'package:booking_app/screens/passenger_info/passenger_info_screen.dart';
 import 'package:booking_app/models/passenger.dart';
 import 'package:booking_app/models/flight_model.dart';
+import 'package:booking_app/routes/app_routes.dart';
+import 'package:flutter/material.dart';
+import 'package:booking_app/services/flight_service.dart';
 
 class AppRouter {
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -97,21 +99,26 @@ class AppRouter {
                     args?['returnSelectedSeats'] as List<String>,
                 totalPrice: args?['totalPrice'] as String,
                 duration: args?['duration'] as String,
+                discountPercentage:
+                    args?['discountPercentage'] as double? ?? 0.0,
               ),
         );
       case AppRoutes.adminDashboard:
         return MaterialPageRoute(
           builder: (_) => const AdminDashboardScreenWrapper(),
         );
-      case AppRoutes.adminProfile:
-        return MaterialPageRoute(builder: (_) => const AdminProfileScreen());
       case AppRoutes.adminFlightManagement:
         return MaterialPageRoute(
-          builder: (_) => const AdminFlightManagementScreenWrapper(),
+          builder: (_) => const flight.AdminFlightManagementScreenWrapper(),
         );
       case AppRoutes.adminBookingManagement:
         return MaterialPageRoute(
-          builder: (_) => const AdminBookingManagementScreenWrapper(),
+          builder: (_) => const booking.AdminBookingManagementScreenWrapper(),
+        );
+      case AppRoutes.addDiscount:
+        return MaterialPageRoute(
+          builder: (_) => const AddDiscountScreenWrapper(),
+          settings: settings,
         );
       case AppRoutes.ticketHistory:
         return MaterialPageRoute(

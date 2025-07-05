@@ -1,6 +1,5 @@
 import 'package:booking_app/models/ticket.dart';
 import 'package:booking_app/routes/app_routes.dart';
-import 'package:booking_app/widgets/admin/bottom_navigation_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:booking_app/blocs/admin_flight/admin_booking_bloc.dart';
@@ -60,6 +59,133 @@ class AdminBookingManagementScreen extends StatelessWidget {
         }
       },
       child: Scaffold(
+        drawer: Drawer(
+          backgroundColor: const Color(0xFF1E1E1E),
+          child: Column(
+            children: [
+              DrawerHeader(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Color(0xFF121212), Color(0xFF1E1E1E)],
+                  ),
+                ),
+                child: Text(
+                  'Menu Admin',
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 24,
+                    color: AppColors.white,
+                    fontFamily: 'Montserrat',
+                  ),
+                ),
+              ),
+              Expanded(
+                child: ListView(
+                  padding: EdgeInsets.zero,
+                  children: [
+                    ListTile(
+                      leading: const Icon(
+                        Icons.airplane_ticket,
+                        color: AppColors.primaryColor,
+                      ),
+                      title: Text(
+                        'Quản lý vé',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontSize: 16,
+                          color: AppColors.white,
+                          fontFamily: 'Montserrat',
+                        ),
+                      ),
+                      onTap: () {
+                        Navigator.pushReplacementNamed(
+                          context,
+                          AppRoutes.adminBookingManagement,
+                        );
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(
+                        Icons.flight,
+                        color: AppColors.primaryColor,
+                      ),
+                      title: Text(
+                        'Quản lý chuyến bay',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontSize: 16,
+                          color: AppColors.white,
+                          fontFamily: 'Montserrat',
+                        ),
+                      ),
+                      onTap: () {
+                        Navigator.pushReplacementNamed(
+                          context,
+                          AppRoutes.adminFlightManagement,
+                        );
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(
+                        Icons.discount,
+                        color: AppColors.primaryColor,
+                      ),
+                      title: Text(
+                        'Quản lý mã giảm giá',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontSize: 16,
+                          color: AppColors.white,
+                          fontFamily: 'Montserrat',
+                        ),
+                      ),
+                      onTap: () {
+                        Navigator.pushReplacementNamed(
+                          context,
+                          AppRoutes.addDiscount,
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: ElevatedButton.icon(
+                  onPressed: () async {
+                    await FirebaseAuth.instance.signOut();
+                    if (context.mounted) {
+                      Navigator.pushNamedAndRemoveUntil(
+                        context,
+                        AppRoutes.login,
+                        (route) => false,
+                      );
+                    }
+                  },
+                  icon: const Icon(Icons.logout, color: AppColors.white),
+                  label: const Text(
+                    'Đăng xuất',
+                    style: TextStyle(
+                      color: AppColors.white,
+                      fontFamily: 'Montserrat',
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.redAccent,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
         body: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
@@ -84,6 +210,13 @@ class AdminBookingManagementScreen extends StatelessWidget {
                   centerTitle: true,
                   backgroundColor: Colors.transparent,
                   elevation: 0,
+                  leading: Builder(
+                    builder:
+                        (context) => IconButton(
+                          icon: const Icon(Icons.menu, color: AppColors.white),
+                          onPressed: () => Scaffold.of(context).openDrawer(),
+                        ),
+                  ),
                 ),
                 Expanded(
                   child: Padding(
@@ -342,9 +475,6 @@ class AdminBookingManagementScreen extends StatelessWidget {
             ),
           ),
         ),
-        bottomNavigationBar: const BottomNavigationWidget(
-          currentIndex: 2,
-        ), // Vé
       ),
     );
   }

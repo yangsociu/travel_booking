@@ -30,7 +30,7 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
         return;
       }
 
-      // Đặt ghế
+      // Đặt ghế cho chuyến đi
       for (var seat in event.selectedSeats) {
         await flightService.bookSeat(event.flight.documentId, seat);
         print('Booked seat: $seat for flight ${event.flight.documentId}');
@@ -40,10 +40,10 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
       for (int i = 0; i < event.passengers.length; i++) {
         final passenger = event.passengers[i];
         final seat = event.selectedSeats[i];
-        final ticketPrice =
-            int.parse(seat[0]) <= 4
-                ? event.flight.price * 1.5
-                : event.flight.price;
+        final seatNumber = int.tryParse(seat[0]) ?? 5;
+        final basePrice =
+            seatNumber <= 4 ? event.flight.price * 1.5 : event.flight.price;
+        final ticketPrice = basePrice * (1 - event.discountPercentage / 100);
         await flightService.bookTicket(
           flight: event.flight,
           passenger: Passenger(
@@ -57,21 +57,30 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
           ticketPrice: ticketPrice,
           phoneNumber: event.phoneNumber,
           email: event.email,
+          discountPercentage: event.discountPercentage,
         );
         print(
-          'Booked ticket for passenger ${passenger.fullName}, seat: $seat, price: $ticketPrice',
+          'Booked ticket for passenger ${passenger.fullName}, seat: $seat, price: $ticketPrice, discount: ${event.discountPercentage}%',
         );
       }
 
-      // Lưu vé cho chuyến về (nếu có)
+      // Đặt ghế và lưu vé cho chuyến về (nếu có)
       if (event.returnFlight != null) {
+        for (var seat in event.returnSelectedSeats) {
+          await flightService.bookSeat(event.returnFlight!.documentId, seat);
+          print(
+            'Booked seat: $seat for return flight ${event.returnFlight!.documentId}',
+          );
+        }
         for (int i = 0; i < event.passengers.length; i++) {
           final passenger = event.passengers[i];
           final seat = event.returnSelectedSeats[i];
-          final ticketPrice =
-              int.parse(seat[0]) <= 4
+          final seatNumber = int.tryParse(seat[0]) ?? 5;
+          final basePrice =
+              seatNumber <= 4
                   ? event.returnFlight!.price * 1.5
                   : event.returnFlight!.price;
+          final ticketPrice = basePrice * (1 - event.discountPercentage / 100);
           await flightService.bookTicket(
             flight: event.returnFlight!,
             passenger: Passenger(
@@ -85,9 +94,10 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
             ticketPrice: ticketPrice,
             phoneNumber: event.phoneNumber,
             email: event.email,
+            discountPercentage: event.discountPercentage,
           );
           print(
-            'Booked ticket for passenger ${passenger.fullName}, seat: $seat, price: $ticketPrice',
+            'Booked ticket for passenger ${passenger.fullName}, seat: $seat, price: $ticketPrice, discount: ${event.discountPercentage}%',
           );
         }
       }

@@ -1,5 +1,4 @@
-// blocs/home/home_bloc.dart
-// BLoC xử lý logic trang Home
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:booking_app/services/flight_service.dart';
 import 'package:booking_app/blocs/home/home_event.dart';
@@ -13,6 +12,8 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     on<SelectNavIcon>(_onSelectNavIcon);
     on<SelectBottomNav>(_onSelectBottomNav);
     on<SelectDestination>(_onSelectDestination);
+    on<SelectDiscount>(_onSelectDiscount);
+    on<CheckDiscountClaimed>(_onCheckDiscountClaimed);
   }
 
   Future<void> _onLoadHomeData(
@@ -21,12 +22,12 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   ) async {
     emit(state.copyWith(isLoading: true));
     try {
-      final airlines = await flightService.getAirlines();
       final destinations = await flightService.getDestinations();
+      final discounts = await flightService.getDiscounts();
       emit(
         state.copyWith(
-          airlines: airlines,
           destinations: destinations,
+          discounts: discounts,
           isLoading: false,
         ),
       );
@@ -45,5 +46,30 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
   void _onSelectDestination(SelectDestination event, Emitter<HomeState> emit) {
     emit(state.copyWith(selectedDestinationIndex: event.index));
+  }
+
+  Future<void> _onSelectDiscount(
+    SelectDiscount event,
+    Emitter<HomeState> emit,
+  ) async {
+    emit(state.copyWith(selectedDiscountCode: event.code));
+  }
+
+  Future<void> _onCheckDiscountClaimed(
+    CheckDiscountClaimed event,
+    Emitter<HomeState> emit,
+  ) async {
+    try {
+      final snapshot =
+          await FirebaseFirestore.instance
+              .collection('used_discounts')
+              .where('userId', isEqualTo: event.userId)
+              .get();
+      final claimedCodes =
+          snapshot.docs.map((doc) => doc['discountCode'] as String).toList();
+      emit(state.copyWith(claimedDiscountCodes: claimedCodes));
+    } catch (e) {
+      emit(state.copyWith(error: 'Lỗi khi kiểm tra mã giảm giá: $e'));
+    }
   }
 }

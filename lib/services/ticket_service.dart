@@ -44,6 +44,11 @@ class TicketService {
                   DateTime.now(),
               phoneNumber: data['phoneNumber'] as String? ?? '',
               email: data['email'] as String? ?? '',
+              discountPercentage:
+                  double.tryParse(
+                    data['discountPercentage']?.toString() ?? '0.0',
+                  ) ??
+                  0.0,
             );
           })
           .whereType<Ticket>() // Chỉ giữ lại các vé hợp lệ

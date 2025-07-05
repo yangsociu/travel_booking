@@ -5,6 +5,7 @@ import 'package:booking_app/models/airline_model.dart';
 import 'package:booking_app/models/destination_model.dart';
 import 'package:booking_app/models/flight_model.dart';
 import 'package:booking_app/models/flight_search_model.dart';
+import 'package:booking_app/models/discount_model.dart';
 
 class City {
   final String name;
@@ -295,21 +296,25 @@ class FlightService {
     required double ticketPrice,
     required String phoneNumber,
     required String email,
+    required double discountPercentage,
   }) async {
     try {
       final ticket = Ticket(
         id: '',
+        documentId: '',
         flight: flight,
         passenger: passenger,
         seat: seat,
         ticketPrice: ticketPrice,
         bookingTime: DateTime.now(),
-        documentId: '',
         phoneNumber: phoneNumber,
         email: email,
+        discountPercentage: discountPercentage,
       );
       await _firestore.collection('tickets').add(ticket.toJson());
-      print('Ticket booked for flight: ${flight.id}, seat: $seat');
+      print(
+        'Ticket booked for flight: ${flight.id}, seat: $seat, discount: $discountPercentage%',
+      );
     } catch (e) {
       print('Error booking ticket: $e');
       throw Exception('Lỗi khi đặt vé: $e');
@@ -333,6 +338,187 @@ class FlightService {
     } catch (e) {
       print('Error fetching tickets: $e');
       throw Exception('Lỗi khi lấy danh sách vé: $e');
+    }
+  }
+
+  Future<List<DiscountModel>> getDiscounts() async {
+    try {
+      final snapshot =
+          await _firestore
+              .collection('discounts')
+              .where('isActive', isEqualTo: true)
+              .get();
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        final discountPercentage = double.tryParse(
+          data['discountPercentage'].toString(),
+        );
+        if (discountPercentage == null) {
+          throw Exception(
+            'Invalid discountPercentage format for discount code ${data['code']}: ${data['discountPercentage']}',
+          );
+        }
+        // Xử lý validUntil (timestamp hoặc chuỗi)
+        DateTime? validUntil;
+        if (data['validUntil'] is Timestamp) {
+          validUntil = (data['validUntil'] as Timestamp).toDate();
+        } else if (data['validUntil'] is String) {
+          validUntil = DateTime.tryParse(data['validUntil']);
+        }
+        if (validUntil == null || validUntil.isBefore(DateTime.now())) {
+          throw Exception(
+            'Invalid or expired validUntil for discount code ${data['code']}: ${data['validUntil']}',
+          );
+        }
+        return DiscountModel(
+          code: data['code'],
+          discountPercentage: discountPercentage,
+          validUntil: validUntil,
+          isActive: data['isActive'],
+        );
+      }).toList();
+    } catch (e) {
+      print('Error fetching discounts: $e');
+      throw Exception('Lỗi khi lấy danh sách mã giảm giá: $e');
+    }
+  }
+
+  Future<void> addDiscount(DiscountModel discount) async {
+    try {
+      await _firestore
+          .collection('discounts')
+          .doc(discount.code)
+          .set(discount.toJson());
+      print('Discount added: ${discount.code}');
+    } catch (e) {
+      print('Error adding discount: $e');
+      throw Exception('Lỗi khi thêm mã giảm giá: $e');
+    }
+  }
+
+  Future<void> saveUsedDiscount(
+    String userId,
+    String discountCode,
+    String flightId,
+  ) async {
+    try {
+      await _firestore.collection('used_discounts').add({
+        'userId': userId,
+        'discountCode': discountCode,
+        'flightId': flightId,
+        'usedAt': DateTime.now().toIso8601String(),
+        'isUsed': false, // Thêm trường isUsed mặc định là false
+      });
+    } catch (e) {
+      print('Error saving used discount: $e');
+      throw Exception('Lỗi khi lưu mã giảm giá: $e');
+    }
+  }
+
+  Future<void> markDiscountAsUsed(String userId, String discountCode) async {
+    try {
+      final snapshot =
+          await _firestore
+              .collection('used_discounts')
+              .where('userId', isEqualTo: userId)
+              .where('discountCode', isEqualTo: discountCode)
+              .where('isUsed', isEqualTo: false)
+              .get();
+      for (var doc in snapshot.docs) {
+        await doc.reference.update({'isUsed': true});
+        print('Marked discount code $discountCode as used for user $userId');
+      }
+    } catch (e) {
+      print('Error marking discount as used: $e');
+      throw Exception('Lỗi khi đánh dấu mã giảm giá đã sử dụng: $e');
+    }
+  }
+
+  Future<List<DiscountModel>> getUserDiscounts(String userId) async {
+    try {
+      final snapshot =
+          await _firestore
+              .collection('used_discounts')
+              .where('userId', isEqualTo: userId)
+              .where('isUsed', isEqualTo: false) // Chỉ lấy mã chưa sử dụng
+              .get();
+      final List<DiscountModel> userDiscounts = [];
+      for (var doc in snapshot.docs) {
+        final discountSnapshot =
+            await _firestore
+                .collection('discounts')
+                .where('code', isEqualTo: doc['discountCode'])
+                .where('isActive', isEqualTo: true)
+                .get();
+        for (var discountDoc in discountSnapshot.docs) {
+          final data = discountDoc.data();
+          final discountPercentage = double.tryParse(
+            data['discountPercentage'].toString(),
+          );
+          if (discountPercentage == null) {
+            print(
+              'Invalid discountPercentage format for discount code ${data['code']}: ${data['discountPercentage']}',
+            );
+            continue;
+          }
+          DateTime? validUntil;
+          if (data['validUntil'] is Timestamp) {
+            validUntil = (data['validUntil'] as Timestamp).toDate();
+          } else if (data['validUntil'] is String) {
+            validUntil = DateTime.tryParse(data['validUntil']);
+          }
+          if (validUntil == null || validUntil.isBefore(DateTime.now())) {
+            print(
+              'Invalid or expired validUntil for discount code ${data['code']}: ${data['validUntil']}',
+            );
+            continue;
+          }
+          userDiscounts.add(
+            DiscountModel(
+              code: data['code'],
+              discountPercentage: discountPercentage,
+              validUntil: validUntil,
+              isActive: data['isActive'],
+            ),
+          );
+        }
+      }
+      print('Fetched ${userDiscounts.length} discounts for user $userId');
+      return userDiscounts;
+    } catch (e) {
+      print('Error fetching user discounts: $e');
+      throw Exception('Lỗi khi lấy danh sách mã giảm giá của người dùng: $e');
+    }
+  }
+
+  Future<void> deleteDiscount(String documentId) async {
+    try {
+      final docRef = _firestore.collection('discounts').doc(documentId);
+      final docSnapshot = await docRef.get();
+      if (!docSnapshot.exists) {
+        throw Exception('Document with ID $documentId not found');
+      }
+      await docRef.delete();
+    } catch (e) {
+      throw Exception('Lỗi khi xóa mã giảm giá: $e');
+    }
+  }
+
+  Future<bool> checkIfDiscountClaimed(
+    String userId,
+    String discountCode,
+  ) async {
+    try {
+      final snapshot =
+          await _firestore
+              .collection('used_discounts')
+              .where('userId', isEqualTo: userId)
+              .where('discountCode', isEqualTo: discountCode)
+              .get();
+      return snapshot.docs.isNotEmpty;
+    } catch (e) {
+      print('Error checking discount claim: $e');
+      return false;
     }
   }
 }

@@ -18,6 +18,7 @@ class HotDestinations extends StatelessWidget {
           isLoading: state.isLoading,
           error: state.error,
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -26,9 +27,9 @@ class HotDestinations extends StatelessWidget {
                     'Điểm đến nổi bật',
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       color: AppColors.primaryColor,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w400,
-                      height: 1.15,
+                      fontSize: 24,
+                      fontWeight: FontWeight.w700,
+                      height: 1.2,
                     ),
                   ),
                   GestureDetector(
@@ -40,18 +41,18 @@ class HotDestinations extends StatelessWidget {
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: AppColors.primaryColor,
                         fontSize: 16,
-                        fontWeight: FontWeight.w400,
+                        fontWeight: FontWeight.w500,
                         decoration: TextDecoration.underline,
                       ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
               SizedBox(
-                height: 326,
+                height: 380,
                 child: PageView(
-                  controller: PageController(viewportFraction: 0.78),
+                  controller: PageController(viewportFraction: 0.82),
                   children:
                       state.destinations
                           .asMap()
@@ -87,8 +88,8 @@ class HotDestinations extends StatelessWidget {
     required bool isSelected,
     required VoidCallback onTap,
   }) {
-    double width = 260.0;
-    double height = 340.0;
+    double width = 300.0;
+    double height = 380.0;
 
     return GestureDetector(
       onTap: onTap,
@@ -96,7 +97,18 @@ class HotDestinations extends StatelessWidget {
         child: Container(
           width: width,
           height: height,
-          margin: const EdgeInsets.symmetric(horizontal: 5.0),
+          margin: const EdgeInsets.symmetric(horizontal: 8.0),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.2),
+                spreadRadius: 3,
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
           child: Stack(
             children: [
               Positioned(
@@ -110,14 +122,6 @@ class HotDestinations extends StatelessWidget {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    shadows: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.2),
-                        spreadRadius: 2,
-                        blurRadius: 5,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
                   ),
                 ),
               ),
@@ -128,54 +132,54 @@ class HotDestinations extends StatelessWidget {
                   borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(20),
                     topRight: Radius.circular(20),
-                    bottomLeft: Radius.circular(4),
-                    bottomRight: Radius.circular(4),
                   ),
                   child: Image.asset(
                     destination.image,
                     width: width,
-                    height: height * 0.5583,
+                    height: height * 0.62,
                     fit: BoxFit.cover,
                   ),
                 ),
               ),
               Positioned(
-                left: width * 0.0814,
-                top: height * 0.6166,
+                left: width * 0.08,
+                top: height * 0.65,
                 child: Text(
                   destination.name,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontSize: 16,
+                    fontSize: 20,
                     fontWeight: FontWeight.w700,
-                    height: 1.44,
+                    height: 1.3,
+                    color: AppColors.black,
                   ),
                 ),
               ),
               Positioned(
-                left: width * 0.6938,
-                top: height * 0.6074,
+                right: width * 0.08,
+                top: height * 0.65,
                 child: Text(
                   destination.price,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: AppColors.primaryColor,
                     fontSize: 24,
                     fontWeight: FontWeight.w700,
-                    height: 0.96,
+                    height: 1.2,
                   ),
                 ),
               ),
               Positioned(
-                left: width * 0.0814,
-                top: height * 0.7086,
+                left: width * 0.08,
+                top: height * 0.74,
                 child: SizedBox(
-                  width: width * 0.8488,
-                  height: height * 0.1503,
+                  width: width * 0.84,
+                  height: height * 0.13,
                   child: Text(
                     destination.description,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
-                      height: 1.29,
+                      height: 1.3,
+                      color: AppColors.grey.withOpacity(0.8),
                     ),
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
@@ -183,15 +187,22 @@ class HotDestinations extends StatelessWidget {
                 ),
               ),
               Positioned(
-                left: width * 0.0814,
-                top: height * 0.9018,
+                left: width * 0.08,
+                bottom: height * 0.04,
                 child: Container(
-                  width: width * 0.4496,
-                  height: height * 0.0675,
+                  width: width * 0.5,
+                  height: height * 0.09,
                   decoration: ShapeDecoration(
-                    color: AppColors.primaryColor,
+                    gradient: LinearGradient(
+                      colors: [
+                        AppColors.primaryColor,
+                        AppColors.primaryColor.withOpacity(0.8),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                   child: Center(
@@ -199,9 +210,9 @@ class HotDestinations extends StatelessWidget {
                       'Tìm hiểu thêm',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w400,
-                        height: 1.29,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        height: 1.3,
                       ),
                     ),
                   ),

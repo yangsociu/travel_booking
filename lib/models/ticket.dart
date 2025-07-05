@@ -12,6 +12,7 @@ class Ticket extends Equatable {
   final DateTime bookingTime;
   final String phoneNumber; // Thêm để nhận diện vé khứ hồi
   final String email; // Thêm để nhận diện vé khứ hồi
+  final double discountPercentage; // Thêm trường mới
 
   const Ticket({
     required this.id,
@@ -23,6 +24,7 @@ class Ticket extends Equatable {
     required this.bookingTime,
     required this.phoneNumber,
     required this.email,
+    required this.discountPercentage,
   });
 
   factory Ticket.fromJson(Map<String, dynamic> json, String docId) {
@@ -45,6 +47,9 @@ class Ticket extends Equatable {
           DateTime.now(),
       phoneNumber: json['phoneNumber'] as String? ?? '',
       email: json['email'] as String? ?? '',
+      discountPercentage:
+          double.tryParse(json['discountPercentage']?.toString() ?? '0.0') ??
+          0.0,
     );
   }
 
@@ -57,6 +62,7 @@ class Ticket extends Equatable {
       'bookingTime': bookingTime.toIso8601String(),
       'phoneNumber': phoneNumber,
       'email': email,
+      'discountPercentage': discountPercentage.toString(),
     };
   }
 
@@ -71,5 +77,6 @@ class Ticket extends Equatable {
     bookingTime,
     phoneNumber,
     email,
+    discountPercentage,
   ];
 }

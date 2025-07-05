@@ -17,4 +17,5 @@ class AppRoutes {
   static const String adminBookingManagement = '/adminBookingManagement';
   static const String adminProfile = '/admin_profile';
   static const String ticketHistory = '/ticket_history';
+  static const String addDiscount = '/add_discount'; // Thêm route addDiscount
 }

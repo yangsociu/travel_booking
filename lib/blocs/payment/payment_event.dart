@@ -23,6 +23,7 @@ class StartPayment extends PaymentEvent {
   final String cardHolder;
   final String expiryDate;
   final String cvv;
+  final double discountPercentage;
 
   const StartPayment({
     required this.flight,
@@ -37,6 +38,7 @@ class StartPayment extends PaymentEvent {
     required this.cardHolder,
     required this.expiryDate,
     required this.cvv,
+    required this.discountPercentage,
   });
 
   @override
@@ -53,6 +55,7 @@ class StartPayment extends PaymentEvent {
     cardHolder,
     expiryDate,
     cvv,
+    discountPercentage,
   ];
 }
 
