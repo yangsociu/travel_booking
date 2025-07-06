@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:booking_app/blocs/admin_flight/admin_discount_bloc.dart';
+import 'package:booking_app/blocs/admin_flight/admin_discount_event.dart';
 import 'package:booking_app/models/discount_model.dart';
 import 'package:booking_app/utils/app_colors.dart';
 import 'package:intl/intl.dart';
@@ -52,11 +55,17 @@ class DiscountListItem extends StatelessWidget {
                   icon: const Icon(Icons.delete, color: Colors.redAccent),
                   onPressed: () {
                     if (discount.documentId.isEmpty) {
+                      print(
+                        'Error: Empty documentId for discount: ${discount.code}',
+                      );
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Lỗi: Không tìm thấy ID mã giảm giá'),
-                          backgroundColor: Colors.red,
+                        SnackBar(
+                          content: const Text(
+                            'Lỗi: Không tìm thấy ID mã giảm giá',
+                          ),
+                          backgroundColor: Colors.redAccent,
                           behavior: SnackBarBehavior.floating,
+                          duration: const Duration(seconds: 4),
                         ),
                       );
                       return;
@@ -103,7 +112,10 @@ class DiscountListItem extends StatelessWidget {
                                   print(
                                     'Calling onDelete for discount: ${discount.code}, documentId: ${discount.documentId}',
                                   );
-                                  onDelete();
+                                  print('BlocProvider context: $context');
+                                  BlocProvider.of<AdminDiscountBloc>(
+                                    context,
+                                  ).add(DeleteDiscount(discount.documentId));
                                   Navigator.pop(dialogContext, true);
                                 },
                                 child: Text(

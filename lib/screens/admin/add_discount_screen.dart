@@ -198,7 +198,7 @@ class _AddDiscountScreenState extends State<AddDiscountScreen> {
               backgroundColor: Colors.transparent,
               builder:
                   (modalContext) => BlocProvider.value(
-                    value: context.read<AdminDiscountBloc>(),
+                    value: BlocProvider.of<AdminDiscountBloc>(context),
                     child: DiscountForm(
                       flightService: context.read<FlightService>(),
                     ),
@@ -263,31 +263,36 @@ class _AddDiscountScreenState extends State<AddDiscountScreen> {
                             >(
                               listener: (context, state) {
                                 print('BlocListener received state: $state');
-                                if (state is AdminDiscountLoaded) {
+                                if (state is DeleteDiscountSuccess) {
                                   print(
-                                    'Discounts loaded after deletion, showing success SnackBar',
+                                    'Discount deleted, showing success SnackBar',
                                   );
-                                  _scaffoldMessengerKey.currentState
-                                      ?.showSnackBar(
-                                        SnackBar(
-                                          backgroundColor: const Color(
-                                            0xFF1E1E1E,
-                                          ),
-                                          content: Text(
-                                            'Xóa mã giảm giá thành công',
-                                            style: Theme.of(
-                                              context,
-                                            ).textTheme.bodyMedium?.copyWith(
-                                              color: AppColors.white,
-                                              fontFamily: 'Montserrat',
-                                            ),
-                                          ),
-                                          duration: const Duration(seconds: 2),
+                                  _scaffoldMessengerKey.currentState?.showSnackBar(
+                                    SnackBar(
+                                      backgroundColor: const Color(0xFF1E1E1E),
+                                      content: Text(
+                                        'Xóa mã giảm giá thành công',
+                                        style: Theme.of(
+                                          context,
+                                        ).textTheme.bodyMedium?.copyWith(
+                                          color: AppColors.white,
+                                          fontFamily: 'Montserrat',
                                         ),
-                                      );
-                                } else if (state is AdminDiscountError) {
+                                      ),
+                                      duration: const Duration(seconds: 4),
+                                      onVisible: () {
+                                        print(
+                                          'SnackBar visible, loading discounts',
+                                        );
+                                        BlocProvider.of<AdminDiscountBloc>(
+                                          context,
+                                        ).add(LoadDiscounts());
+                                      },
+                                    ),
+                                  );
+                                } else if (state is DeleteDiscountFailure) {
                                   print(
-                                    'Error in BlocListener: ${state.message}',
+                                    'Delete discount failed: ${state.message}',
                                   );
                                   _scaffoldMessengerKey.currentState?.showSnackBar(
                                     SnackBar(
@@ -301,9 +306,29 @@ class _AddDiscountScreenState extends State<AddDiscountScreen> {
                                           fontFamily: 'Montserrat',
                                         ),
                                       ),
-                                      duration: const Duration(seconds: 3),
+                                      duration: const Duration(seconds: 4),
                                     ),
                                   );
+                                } else if (state is AdminDiscountError) {
+                                  print(
+                                    'Error in BlocListener: ${state.message}',
+                                  );
+                                  _scaffoldMessengerKey.currentState
+                                      ?.showSnackBar(
+                                        SnackBar(
+                                          backgroundColor: Colors.redAccent,
+                                          content: Text(
+                                            'Lỗi: ${state.message}',
+                                            style: Theme.of(
+                                              context,
+                                            ).textTheme.bodyMedium?.copyWith(
+                                              color: AppColors.white,
+                                              fontFamily: 'Montserrat',
+                                            ),
+                                          ),
+                                          duration: const Duration(seconds: 4),
+                                        ),
+                                      );
                                 }
                               },
                               child: BlocBuilder<
@@ -336,23 +361,40 @@ class _AddDiscountScreenState extends State<AddDiscountScreen> {
                                           color: AppColors.primaryColor,
                                           onRefresh: () async {
                                             print('Refreshing discount list');
-                                            context
-                                                .read<AdminDiscountBloc>()
-                                                .add(LoadDiscounts());
+                                            BlocProvider.of<AdminDiscountBloc>(
+                                              context,
+                                            ).add(LoadDiscounts());
                                           },
                                           child: ListView.builder(
                                             itemCount: state.discounts.length,
                                             itemBuilder: (context, index) {
-                                              return DiscountListItem(
-                                                discount:
-                                                    state.discounts[index],
-                                                onDelete: () {
-                                                  if (state
-                                                      .discounts[index]
+                                              final discount =
+                                                  state.discounts[index];
+                                              return Dismissible(
+                                                key: Key(discount.documentId),
+                                                direction:
+                                                    DismissDirection.endToStart,
+                                                background: Container(
+                                                  color: Colors.redAccent,
+                                                  alignment:
+                                                      Alignment.centerRight,
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                        right: 16.0,
+                                                      ),
+                                                  child: const Icon(
+                                                    Icons.delete,
+                                                    color: AppColors.white,
+                                                  ),
+                                                ),
+                                                confirmDismiss: (
+                                                  direction,
+                                                ) async {
+                                                  if (discount
                                                       .documentId
                                                       .isEmpty) {
                                                     print(
-                                                      'Empty documentId for discount: ${state.discounts[index].code}',
+                                                      'Empty documentId for discount: ${discount.code}',
                                                     );
                                                     _scaffoldMessengerKey
                                                         .currentState
@@ -373,13 +415,13 @@ class _AddDiscountScreenState extends State<AddDiscountScreen> {
                                                               ),
                                                             ),
                                                             duration: Duration(
-                                                              seconds: 3,
+                                                              seconds: 4,
                                                             ),
                                                           ),
                                                         );
-                                                    return;
+                                                    return false;
                                                   }
-                                                  showDialog<bool>(
+                                                  return showDialog<bool>(
                                                     context: context,
                                                     builder:
                                                         (
@@ -405,7 +447,7 @@ class _AddDiscountScreenState extends State<AddDiscountScreen> {
                                                                 ),
                                                           ),
                                                           content: Text(
-                                                            'Bạn có chắc muốn xóa mã "${state.discounts[index].code}"?',
+                                                            'Bạn có chắc muốn xóa mã "${discount.code}"?',
                                                             style: Theme.of(
                                                                   context,
                                                                 )
@@ -444,26 +486,16 @@ class _AddDiscountScreenState extends State<AddDiscountScreen> {
                                                             TextButton(
                                                               onPressed: () {
                                                                 print(
-                                                                  'Triggering DeleteDiscount for: ${state.discounts[index].code}, documentId: ${state.discounts[index].documentId}',
+                                                                  'Triggering DeleteDiscount for: ${discount.code}, documentId: ${discount.documentId}',
                                                                 );
-                                                                context
-                                                                    .read<
-                                                                      AdminDiscountBloc
-                                                                    >()
-                                                                    .add(
-                                                                      DeleteDiscount(
-                                                                        state
-                                                                            .discounts[index]
-                                                                            .documentId,
-                                                                      ),
-                                                                    );
-                                                                context
-                                                                    .read<
-                                                                      AdminDiscountBloc
-                                                                    >()
-                                                                    .add(
-                                                                      LoadDiscounts(),
-                                                                    ); // Thêm dòng này
+                                                                BlocProvider.of<
+                                                                  AdminDiscountBloc
+                                                                >(context).add(
+                                                                  DeleteDiscount(
+                                                                    discount
+                                                                        .documentId,
+                                                                  ),
+                                                                );
                                                                 Navigator.of(
                                                                   dialogContext,
                                                                 ).pop(true);
@@ -488,6 +520,146 @@ class _AddDiscountScreenState extends State<AddDiscountScreen> {
                                                         ),
                                                   );
                                                 },
+                                                onDismissed: (direction) {
+                                                  // Không cần thực hiện vì đã xử lý trong confirmDismiss
+                                                },
+                                                child: DiscountListItem(
+                                                  discount: discount,
+                                                  onDelete: () {
+                                                    if (discount
+                                                        .documentId
+                                                        .isEmpty) {
+                                                      print(
+                                                        'Empty documentId for discount: ${discount.code}',
+                                                      );
+                                                      _scaffoldMessengerKey
+                                                          .currentState
+                                                          ?.showSnackBar(
+                                                            const SnackBar(
+                                                              backgroundColor:
+                                                                  Color(
+                                                                    0xFF1E1E1E,
+                                                                  ),
+                                                              content: Text(
+                                                                'Lỗi: Không tìm thấy ID mã giảm giá',
+                                                                style: TextStyle(
+                                                                  color:
+                                                                      AppColors
+                                                                          .white,
+                                                                  fontFamily:
+                                                                      'Montserrat',
+                                                                ),
+                                                              ),
+                                                              duration:
+                                                                  Duration(
+                                                                    seconds: 4,
+                                                                  ),
+                                                            ),
+                                                          );
+                                                      return;
+                                                    }
+                                                    showDialog<bool>(
+                                                      context: context,
+                                                      builder:
+                                                          (
+                                                            dialogContext,
+                                                          ) => AlertDialog(
+                                                            backgroundColor:
+                                                                const Color(
+                                                                  0xFF1E1E1E,
+                                                                ),
+                                                            title: Text(
+                                                              'Xác nhận xóa',
+                                                              style: Theme.of(
+                                                                    context,
+                                                                  )
+                                                                  .textTheme
+                                                                  .bodyLarge
+                                                                  ?.copyWith(
+                                                                    color:
+                                                                        AppColors
+                                                                            .white,
+                                                                    fontFamily:
+                                                                        'Montserrat',
+                                                                  ),
+                                                            ),
+                                                            content: Text(
+                                                              'Bạn có chắc muốn xóa mã "${discount.code}"?',
+                                                              style: Theme.of(
+                                                                    context,
+                                                                  )
+                                                                  .textTheme
+                                                                  .bodyMedium
+                                                                  ?.copyWith(
+                                                                    color:
+                                                                        AppColors
+                                                                            .white,
+                                                                    fontFamily:
+                                                                        'Montserrat',
+                                                                  ),
+                                                            ),
+                                                            actions: [
+                                                              TextButton(
+                                                                onPressed:
+                                                                    () => Navigator.of(
+                                                                      dialogContext,
+                                                                    ).pop(
+                                                                      false,
+                                                                    ),
+                                                                child: Text(
+                                                                  'Hủy',
+                                                                  style: Theme.of(
+                                                                        context,
+                                                                      )
+                                                                      .textTheme
+                                                                      .bodyMedium
+                                                                      ?.copyWith(
+                                                                        color:
+                                                                            AppColors.grey,
+                                                                        fontFamily:
+                                                                            'Montserrat',
+                                                                      ),
+                                                                ),
+                                                              ),
+                                                              TextButton(
+                                                                onPressed: () {
+                                                                  print(
+                                                                    'Triggering DeleteDiscount for: ${discount.code}, documentId: ${discount.documentId}',
+                                                                  );
+                                                                  BlocProvider.of<
+                                                                    AdminDiscountBloc
+                                                                  >(
+                                                                    context,
+                                                                  ).add(
+                                                                    DeleteDiscount(
+                                                                      discount
+                                                                          .documentId,
+                                                                    ),
+                                                                  );
+                                                                  Navigator.of(
+                                                                    dialogContext,
+                                                                  ).pop(true);
+                                                                },
+                                                                child: Text(
+                                                                  'Xóa',
+                                                                  style: Theme.of(
+                                                                        context,
+                                                                      )
+                                                                      .textTheme
+                                                                      .bodyMedium
+                                                                      ?.copyWith(
+                                                                        color:
+                                                                            Colors.redAccent,
+                                                                        fontFamily:
+                                                                            'Montserrat',
+                                                                      ),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                    );
+                                                  },
+                                                ),
                                               );
                                             },
                                           ),
@@ -714,15 +886,15 @@ class _DiscountFormState extends State<DiscountForm> {
                               ),
                               validUntil: _validUntil,
                               isActive: true,
-                              documentId: '', // Để trống, Firestore sẽ tạo ID
+                              documentId: '',
                             );
                             print(
                               'Adding discount: ${discount.code}, documentId: auto-generated',
                             );
                             await widget.flightService.addDiscount(discount);
-                            context.read<AdminDiscountBloc>().add(
-                              LoadDiscounts(),
-                            );
+                            BlocProvider.of<AdminDiscountBloc>(
+                              context,
+                            ).add(LoadDiscounts());
                             Navigator.pop(context);
                           } catch (e) {
                             setState(() {

@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:booking_app/services/flight_service.dart';
 import 'admin_discount_event.dart';
 import 'admin_discount_state.dart';
@@ -32,28 +33,34 @@ class AdminDiscountBloc extends Bloc<AdminDiscountEvent, AdminDiscountState> {
     Emitter<AdminDiscountState> emit,
   ) async {
     print('Starting _onDeleteDiscount with documentId: ${event.documentId}');
+    if (event.documentId.isEmpty) {
+      print('Error: documentId is empty');
+      emit(DeleteDiscountFailure('ID mã giảm giá không hợp lệ'));
+      return;
+    }
     emit(AdminDiscountLoading());
     try {
+      print('Checking if document exists: ${event.documentId}');
+      final doc =
+          await FirebaseFirestore.instance
+              .collection('discounts')
+              .doc(event.documentId)
+              .get();
+      if (!doc.exists) {
+        print('Error: Document ${event.documentId} does not exist');
+        emit(DeleteDiscountFailure('Mã giảm giá không tồn tại'));
+        return;
+      }
       print(
         'Calling flightService.deleteDiscount for documentId: ${event.documentId}',
       );
       await flightService.deleteDiscount(event.documentId);
       print('Discount deleted successfully: ${event.documentId}');
-      if (state is AdminDiscountLoaded) {
-        final updatedDiscounts =
-            (state as AdminDiscountLoaded).discounts
-                .where((d) => d.documentId != event.documentId)
-                .toList();
-        print('Updated discounts locally: ${updatedDiscounts.length} items');
-        emit(AdminDiscountLoaded(updatedDiscounts));
-      } else {
-        print('State is not AdminDiscountLoaded, fetching discounts');
-        final discounts = await flightService.getDiscounts();
-        emit(AdminDiscountLoaded(discounts));
-      }
+      print('Emitting DeleteDiscountSuccess');
+      emit(DeleteDiscountSuccess());
     } catch (e) {
       print('Error in _onDeleteDiscount: $e');
-      emit(AdminDiscountError('Không thể xóa mã giảm giá: $e'));
+      emit(DeleteDiscountFailure('Không thể xóa mã giảm giá: $e'));
     } finally {
       print('Finished _onDeleteDiscount for documentId: ${event.documentId}');
     }

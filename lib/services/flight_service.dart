@@ -502,35 +502,16 @@ class FlightService {
   }
 
   Future<void> deleteDiscount(String documentId) async {
-    print('Starting deleteDiscount with documentId: $documentId');
     try {
-      if (documentId.isEmpty) {
-        print('Error: Empty documentId provided');
-        throw Exception('Document ID cannot be empty');
-      }
-      print('Fetching document snapshot for documentId: $documentId');
-      final docRef = _firestore.collection('discounts').doc(documentId);
-      final docSnapshot = await docRef.get();
-      if (!docSnapshot.exists) {
-        print('Error: Document with ID $documentId not found');
-        throw Exception('Document with ID $documentId not found');
-      }
-      print('Document exists, attempting to delete: $documentId');
-      await docRef.delete();
-      print('Discount deleted successfully: $documentId');
+      print('Attempting to delete discount with documentId: $documentId');
+      await FirebaseFirestore.instance
+          .collection('discounts')
+          .doc(documentId)
+          .delete();
+      print('Successfully deleted discount: $documentId');
     } catch (e) {
-      if (e.toString().contains('permission-denied')) {
-        print(
-          'Error: Permission denied when deleting discount with documentId: $documentId',
-        );
-        throw Exception(
-          'Không có quyền xóa mã giảm giá. Vui lòng kiểm tra quyền admin.',
-        );
-      }
-      print('Error in deleteDiscount: $e');
-      throw Exception('Lỗi khi xóa mã giảm giá: $e');
-    } finally {
-      print('Finished deleteDiscount for documentId: $documentId');
+      print('Error deleting discount: $e');
+      throw Exception('Failed to delete discount: $e');
     }
   }
 
