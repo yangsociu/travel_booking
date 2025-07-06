@@ -16,11 +16,12 @@ class AddDiscountScreenWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final flightService = context.read<FlightService>();
+    print('FlightService provided: $flightService');
+    final adminDiscountBloc = AdminDiscountBloc(flightService);
+    print('AdminDiscountBloc created: $adminDiscountBloc');
     return BlocProvider(
-      create:
-          (context) =>
-              AdminDiscountBloc(context.read<FlightService>())
-                ..add(LoadDiscounts()),
+      create: (context) => adminDiscountBloc..add(LoadDiscounts()),
       child: const AddDiscountScreen(),
     );
   }
@@ -35,6 +36,8 @@ class AddDiscountScreen extends StatefulWidget {
 
 class _AddDiscountScreenState extends State<AddDiscountScreen> {
   bool? _isAdmin;
+  final GlobalKey<ScaffoldMessengerState> _scaffoldMessengerKey =
+      GlobalKey<ScaffoldMessengerState>();
 
   @override
   void initState() {
@@ -62,289 +65,347 @@ class _AddDiscountScreenState extends State<AddDiscountScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      drawer: Drawer(
-        backgroundColor: const Color(0xFF1E1E1E),
-        child: Column(
-          children: [
-            DrawerHeader(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Color(0xFF121212), Color(0xFF1E1E1E)],
-                ),
-              ),
-              child: Text(
-                'Menu Admin',
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 24,
-                  color: AppColors.white,
-                  fontFamily: 'Montserrat',
-                ),
-              ),
-            ),
-            Expanded(
-              child: ListView(
-                padding: EdgeInsets.zero,
-                children: [
-                  ListTile(
-                    leading: const Icon(
-                      Icons.airplane_ticket,
-                      color: AppColors.primaryColor,
-                    ),
-                    title: Text(
-                      'Quản lý vé',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontSize: 16,
-                        color: AppColors.white,
-                        fontFamily: 'Montserrat',
-                      ),
-                    ),
-                    onTap: () {
-                      Navigator.pushReplacementNamed(
-                        context,
-                        AppRoutes.adminBookingManagement,
-                      );
-                    },
-                  ),
-                  ListTile(
-                    leading: const Icon(
-                      Icons.flight,
-                      color: AppColors.primaryColor,
-                    ),
-                    title: Text(
-                      'Quản lý chuyến bay',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontSize: 16,
-                        color: AppColors.white,
-                        fontFamily: 'Montserrat',
-                      ),
-                    ),
-                    onTap: () {
-                      Navigator.pushReplacementNamed(
-                        context,
-                        AppRoutes.adminFlightManagement,
-                      );
-                    },
-                  ),
-                  ListTile(
-                    leading: const Icon(
-                      Icons.discount,
-                      color: AppColors.primaryColor,
-                    ),
-                    title: Text(
-                      'Quản lý mã giảm giá',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontSize: 16,
-                        color: AppColors.white,
-                        fontFamily: 'Montserrat',
-                      ),
-                    ),
-                    onTap: () {
-                      Navigator.pushReplacementNamed(
-                        context,
-                        AppRoutes.addDiscount,
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: ElevatedButton.icon(
-                onPressed: () async {
-                  await FirebaseAuth.instance.signOut();
-                  if (context.mounted) {
-                    Navigator.pushNamedAndRemoveUntil(
-                      context,
-                      AppRoutes.login,
-                      (route) => false,
-                    );
-                  }
-                },
-                icon: const Icon(Icons.logout, color: AppColors.white),
-                label: const Text(
-                  'Đăng xuất',
-                  style: TextStyle(
-                    color: AppColors.white,
-                    fontFamily: 'Montserrat',
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
-                  ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.redAccent,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 12,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: AppColors.primaryColor,
-        onPressed: () {
-          showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            backgroundColor: Colors.transparent,
-            builder:
-                (modalContext) => BlocProvider.value(
-                  value: context.read<AdminDiscountBloc>(),
-                  child: DiscountForm(
-                    flightService: context.read<FlightService>(),
-                  ),
-                ),
-          );
-        },
-        child: const Icon(Icons.add, color: AppColors.white),
-      ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFF121212), Color(0xFF1E1E1E)],
-          ),
-        ),
-        child: SafeArea(
+    return ScaffoldMessenger(
+      key: _scaffoldMessengerKey,
+      child: Scaffold(
+        drawer: Drawer(
+          backgroundColor: const Color(0xFF1E1E1E),
           child: Column(
             children: [
-              AppBar(
-                title: Text(
-                  'Quản lý mã giảm giá',
+              DrawerHeader(
+                decoration: const BoxDecoration(color: Color(0xFF1E1E1E)),
+                child: Text(
+                  'Menu Admin',
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 24,
                     color: AppColors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
                     fontFamily: 'Montserrat',
                   ),
-                ),
-                centerTitle: true,
-                backgroundColor: Colors.transparent,
-                elevation: 0,
-                leading: Builder(
-                  builder:
-                      (context) => IconButton(
-                        icon: const Icon(Icons.menu, color: AppColors.white),
-                        onPressed: () => Scaffold.of(context).openDrawer(),
-                      ),
                 ),
               ),
               Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child:
-                      _isAdmin == null
-                          ? const Center(
-                            child: CircularProgressIndicator(
-                              color: AppColors.primaryColor,
-                            ),
-                          )
-                          : _isAdmin == false
-                          ? Center(
-                            child: Text(
-                              'Bạn không có quyền truy cập. Vui lòng đăng nhập bằng tài khoản admin.',
-                              style: Theme.of(
-                                context,
-                              ).textTheme.bodyMedium?.copyWith(
-                                fontSize: 16,
-                                color: AppColors.white,
-                                fontFamily: 'Montserrat',
+                child: ListView(
+                  padding: EdgeInsets.zero,
+                  children: [
+                    ListTile(
+                      leading: const Icon(
+                        Icons.airplane_ticket,
+                        color: AppColors.primaryColor,
+                      ),
+                      title: Text(
+                        'Quản lý vé',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontSize: 16,
+                          color: AppColors.white,
+                          fontFamily: 'Montserrat',
+                        ),
+                      ),
+                      onTap: () {
+                        Navigator.pushReplacementNamed(
+                          context,
+                          AppRoutes.adminBookingManagement,
+                        );
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(
+                        Icons.flight,
+                        color: AppColors.primaryColor,
+                      ),
+                      title: Text(
+                        'Quản lý chuyến bay',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontSize: 16,
+                          color: AppColors.white,
+                          fontFamily: 'Montserrat',
+                        ),
+                      ),
+                      onTap: () {
+                        Navigator.pushReplacementNamed(
+                          context,
+                          AppRoutes.adminFlightManagement,
+                        );
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(
+                        Icons.discount,
+                        color: AppColors.primaryColor,
+                      ),
+                      title: Text(
+                        'Quản lý mã giảm giá',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontSize: 16,
+                          color: AppColors.white,
+                          fontFamily: 'Montserrat',
+                        ),
+                      ),
+                      onTap: () {
+                        Navigator.pushReplacementNamed(
+                          context,
+                          AppRoutes.addDiscount,
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: ElevatedButton.icon(
+                  onPressed: () async {
+                    await FirebaseAuth.instance.signOut();
+                    if (context.mounted) {
+                      Navigator.pushNamedAndRemoveUntil(
+                        context,
+                        AppRoutes.login,
+                        (route) => false,
+                      );
+                    }
+                  },
+                  icon: const Icon(Icons.logout, color: AppColors.white),
+                  label: const Text(
+                    'Đăng xuất',
+                    style: TextStyle(
+                      color: AppColors.white,
+                      fontFamily: 'Montserrat',
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.redAccent,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        floatingActionButton: FloatingActionButton(
+          backgroundColor: AppColors.primaryColor,
+          onPressed: () {
+            showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              backgroundColor: Colors.transparent,
+              builder:
+                  (modalContext) => BlocProvider.value(
+                    value: context.read<AdminDiscountBloc>(),
+                    child: DiscountForm(
+                      flightService: context.read<FlightService>(),
+                    ),
+                  ),
+            );
+          },
+          child: const Icon(Icons.add, color: AppColors.white),
+        ),
+        body: Container(
+          decoration: const BoxDecoration(color: Color(0xFF1E1E1E)),
+          child: SafeArea(
+            child: Column(
+              children: [
+                AppBar(
+                  title: Text(
+                    'Quản lý mã giảm giá',
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: AppColors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'Montserrat',
+                    ),
+                  ),
+                  centerTitle: true,
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                  leading: Builder(
+                    builder:
+                        (context) => IconButton(
+                          icon: const Icon(Icons.menu, color: AppColors.white),
+                          onPressed: () => Scaffold.of(context).openDrawer(),
+                        ),
+                  ),
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child:
+                        _isAdmin == null
+                            ? const Center(
+                              child: CircularProgressIndicator(
+                                color: AppColors.primaryColor,
                               ),
-                              textAlign: TextAlign.center,
-                            ),
-                          )
-                          : BlocBuilder<AdminDiscountBloc, AdminDiscountState>(
-                            builder: (context, state) {
-                              if (state is AdminDiscountLoading) {
-                                return const Center(
-                                  child: CircularProgressIndicator(
-                                    color: AppColors.primaryColor,
-                                  ),
-                                );
-                              } else if (state is AdminDiscountLoaded) {
-                                return state.discounts.isEmpty
-                                    ? Center(
-                                      child: Text(
-                                        'Không có mã giảm giá nào.',
+                            )
+                            : _isAdmin == false
+                            ? Center(
+                              child: Text(
+                                'Bạn không có quyền truy cập. Vui lòng đăng nhập bằng tài khoản admin.',
+                                style: Theme.of(
+                                  context,
+                                ).textTheme.bodyMedium?.copyWith(
+                                  fontSize: 16,
+                                  color: AppColors.white,
+                                  fontFamily: 'Montserrat',
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            )
+                            : BlocListener<
+                              AdminDiscountBloc,
+                              AdminDiscountState
+                            >(
+                              listener: (context, state) {
+                                print('BlocListener received state: $state');
+                                if (state is AdminDiscountLoaded) {
+                                  print(
+                                    'Discounts loaded after deletion, showing success SnackBar',
+                                  );
+                                  _scaffoldMessengerKey.currentState
+                                      ?.showSnackBar(
+                                        SnackBar(
+                                          backgroundColor: const Color(
+                                            0xFF1E1E1E,
+                                          ),
+                                          content: Text(
+                                            'Xóa mã giảm giá thành công',
+                                            style: Theme.of(
+                                              context,
+                                            ).textTheme.bodyMedium?.copyWith(
+                                              color: AppColors.white,
+                                              fontFamily: 'Montserrat',
+                                            ),
+                                          ),
+                                          duration: const Duration(seconds: 2),
+                                        ),
+                                      );
+                                } else if (state is AdminDiscountError) {
+                                  print(
+                                    'Error in BlocListener: ${state.message}',
+                                  );
+                                  _scaffoldMessengerKey.currentState?.showSnackBar(
+                                    SnackBar(
+                                      backgroundColor: Colors.redAccent,
+                                      content: Text(
+                                        'Lỗi khi xóa mã giảm giá: ${state.message}',
                                         style: Theme.of(
                                           context,
                                         ).textTheme.bodyMedium?.copyWith(
-                                          fontSize: 16,
                                           color: AppColors.white,
                                           fontFamily: 'Montserrat',
                                         ),
                                       ),
-                                    )
-                                    : RefreshIndicator(
-                                      color: AppColors.primaryColor,
-                                      onRefresh: () async {
-                                        context.read<AdminDiscountBloc>().add(
-                                          LoadDiscounts(),
-                                        );
-                                      },
-                                      child: ListView.builder(
-                                        itemCount: state.discounts.length,
-                                        itemBuilder: (context, index) {
-                                          return DiscountListItem(
-                                            discount: state.discounts[index],
-                                            onDelete: () async {
-                                              final confirm = await showDialog<
-                                                bool
-                                              >(
-                                                context: context,
-                                                builder:
-                                                    (
-                                                      dialogContext,
-                                                    ) => AlertDialog(
-                                                      backgroundColor:
-                                                          const Color(
-                                                            0xFF1E1E1E,
+                                      duration: const Duration(seconds: 3),
+                                    ),
+                                  );
+                                }
+                              },
+                              child: BlocBuilder<
+                                AdminDiscountBloc,
+                                AdminDiscountState
+                              >(
+                                builder: (context, state) {
+                                  print('BlocBuilder rendering state: $state');
+                                  if (state is AdminDiscountLoading) {
+                                    return const Center(
+                                      child: CircularProgressIndicator(
+                                        color: AppColors.primaryColor,
+                                      ),
+                                    );
+                                  } else if (state is AdminDiscountLoaded) {
+                                    return state.discounts.isEmpty
+                                        ? Center(
+                                          child: Text(
+                                            'Không có mã giảm giá nào.',
+                                            style: Theme.of(
+                                              context,
+                                            ).textTheme.bodyMedium?.copyWith(
+                                              fontSize: 16,
+                                              color: AppColors.white,
+                                              fontFamily: 'Montserrat',
+                                            ),
+                                          ),
+                                        )
+                                        : RefreshIndicator(
+                                          color: AppColors.primaryColor,
+                                          onRefresh: () async {
+                                            print('Refreshing discount list');
+                                            context
+                                                .read<AdminDiscountBloc>()
+                                                .add(LoadDiscounts());
+                                          },
+                                          child: ListView.builder(
+                                            itemCount: state.discounts.length,
+                                            itemBuilder: (context, index) {
+                                              return DiscountListItem(
+                                                discount:
+                                                    state.discounts[index],
+                                                onDelete: () {
+                                                  if (state
+                                                      .discounts[index]
+                                                      .documentId
+                                                      .isEmpty) {
+                                                    print(
+                                                      'Empty documentId for discount: ${state.discounts[index].code}',
+                                                    );
+                                                    _scaffoldMessengerKey
+                                                        .currentState
+                                                        ?.showSnackBar(
+                                                          const SnackBar(
+                                                            backgroundColor:
+                                                                Color(
+                                                                  0xFF1E1E1E,
+                                                                ),
+                                                            content: Text(
+                                                              'Lỗi: Không tìm thấy ID mã giảm giá',
+                                                              style: TextStyle(
+                                                                color:
+                                                                    AppColors
+                                                                        .white,
+                                                                fontFamily:
+                                                                    'Montserrat',
+                                                              ),
+                                                            ),
+                                                            duration: Duration(
+                                                              seconds: 3,
+                                                            ),
                                                           ),
-                                                      title: Text(
-                                                        'Xác nhận xóa',
-                                                        style: Theme.of(context)
-                                                            .textTheme
-                                                            .bodyLarge
-                                                            ?.copyWith(
-                                                              color:
-                                                                  AppColors
-                                                                      .white,
-                                                              fontFamily:
-                                                                  'Montserrat',
-                                                            ),
-                                                      ),
-                                                      content: Text(
-                                                        'Bạn có chắc chắn muốn xóa mã giảm giá này?',
-                                                        style: Theme.of(context)
-                                                            .textTheme
-                                                            .bodyMedium
-                                                            ?.copyWith(
-                                                              color:
-                                                                  AppColors
-                                                                      .white,
-                                                              fontFamily:
-                                                                  'Montserrat',
-                                                            ),
-                                                      ),
-                                                      actions: [
-                                                        TextButton(
-                                                          onPressed:
-                                                              () => Navigator.of(
-                                                                dialogContext,
-                                                              ).pop(false),
-                                                          child: Text(
-                                                            'Hủy',
+                                                        );
+                                                    return;
+                                                  }
+                                                  showDialog<bool>(
+                                                    context: context,
+                                                    builder:
+                                                        (
+                                                          dialogContext,
+                                                        ) => AlertDialog(
+                                                          backgroundColor:
+                                                              const Color(
+                                                                0xFF1E1E1E,
+                                                              ),
+                                                          title: Text(
+                                                            'Xác nhận xóa',
+                                                            style: Theme.of(
+                                                                  context,
+                                                                )
+                                                                .textTheme
+                                                                .bodyLarge
+                                                                ?.copyWith(
+                                                                  color:
+                                                                      AppColors
+                                                                          .white,
+                                                                  fontFamily:
+                                                                      'Montserrat',
+                                                                ),
+                                                          ),
+                                                          content: Text(
+                                                            'Bạn có chắc muốn xóa mã "${state.discounts[index].code}"?',
                                                             style: Theme.of(
                                                                   context,
                                                                 )
@@ -353,103 +414,117 @@ class _AddDiscountScreenState extends State<AddDiscountScreen> {
                                                                 ?.copyWith(
                                                                   color:
                                                                       AppColors
-                                                                          .grey,
+                                                                          .white,
                                                                   fontFamily:
                                                                       'Montserrat',
                                                                 ),
                                                           ),
+                                                          actions: [
+                                                            TextButton(
+                                                              onPressed:
+                                                                  () => Navigator.of(
+                                                                    dialogContext,
+                                                                  ).pop(false),
+                                                              child: Text(
+                                                                'Hủy',
+                                                                style: Theme.of(
+                                                                      context,
+                                                                    )
+                                                                    .textTheme
+                                                                    .bodyMedium
+                                                                    ?.copyWith(
+                                                                      color:
+                                                                          AppColors
+                                                                              .grey,
+                                                                      fontFamily:
+                                                                          'Montserrat',
+                                                                    ),
+                                                              ),
+                                                            ),
+                                                            TextButton(
+                                                              onPressed: () {
+                                                                print(
+                                                                  'Triggering DeleteDiscount for: ${state.discounts[index].code}, documentId: ${state.discounts[index].documentId}',
+                                                                );
+                                                                context
+                                                                    .read<
+                                                                      AdminDiscountBloc
+                                                                    >()
+                                                                    .add(
+                                                                      DeleteDiscount(
+                                                                        state
+                                                                            .discounts[index]
+                                                                            .documentId,
+                                                                      ),
+                                                                    );
+                                                                context
+                                                                    .read<
+                                                                      AdminDiscountBloc
+                                                                    >()
+                                                                    .add(
+                                                                      LoadDiscounts(),
+                                                                    ); // Thêm dòng này
+                                                                Navigator.of(
+                                                                  dialogContext,
+                                                                ).pop(true);
+                                                              },
+                                                              child: Text(
+                                                                'Xóa',
+                                                                style: Theme.of(
+                                                                      context,
+                                                                    )
+                                                                    .textTheme
+                                                                    .bodyMedium
+                                                                    ?.copyWith(
+                                                                      color:
+                                                                          Colors
+                                                                              .redAccent,
+                                                                      fontFamily:
+                                                                          'Montserrat',
+                                                                    ),
+                                                              ),
+                                                            ),
+                                                          ],
                                                         ),
-                                                        TextButton(
-                                                          onPressed:
-                                                              () => Navigator.of(
-                                                                dialogContext,
-                                                              ).pop(true),
-                                                          child: Text(
-                                                            'Xóa',
-                                                            style: Theme.of(
-                                                                  context,
-                                                                )
-                                                                .textTheme
-                                                                .bodyMedium
-                                                                ?.copyWith(
-                                                                  color:
-                                                                      Colors
-                                                                          .redAccent,
-                                                                  fontFamily:
-                                                                      'Montserrat',
-                                                                ),
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
+                                                  );
+                                                },
                                               );
-                                              if (confirm == true) {
-                                                context
-                                                    .read<AdminDiscountBloc>()
-                                                    .add(
-                                                      DeleteDiscount(
-                                                        state
-                                                            .discounts[index]
-                                                            .documentId,
-                                                      ),
-                                                    );
-                                                ScaffoldMessenger.of(
-                                                  context,
-                                                ).showSnackBar(
-                                                  SnackBar(
-                                                    backgroundColor:
-                                                        const Color(0xFF1E1E1E),
-                                                    content: Text(
-                                                      'Xóa mã giảm giá thành công',
-                                                      style: Theme.of(context)
-                                                          .textTheme
-                                                          .bodyMedium
-                                                          ?.copyWith(
-                                                            color:
-                                                                AppColors.white,
-                                                            fontFamily:
-                                                                'Montserrat',
-                                                          ),
-                                                    ),
-                                                  ),
-                                                );
-                                              }
                                             },
-                                          );
-                                        },
+                                          ),
+                                        );
+                                  } else if (state is AdminDiscountError) {
+                                    return Center(
+                                      child: Text(
+                                        'Lỗi: ${state.message}',
+                                        style: Theme.of(
+                                          context,
+                                        ).textTheme.bodyMedium?.copyWith(
+                                          fontSize: 16,
+                                          color: AppColors.white,
+                                          fontFamily: 'Montserrat',
+                                        ),
                                       ),
                                     );
-                              } else if (state is AdminDiscountError) {
-                                return Center(
-                                  child: Text(
-                                    'Lỗi: ${state.message}',
-                                    style: Theme.of(
-                                      context,
-                                    ).textTheme.bodyMedium?.copyWith(
-                                      fontSize: 16,
-                                      color: AppColors.white,
-                                      fontFamily: 'Montserrat',
+                                  }
+                                  return Center(
+                                    child: Text(
+                                      'Khởi tạo...',
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.bodyMedium?.copyWith(
+                                        fontSize: 16,
+                                        color: AppColors.white,
+                                        fontFamily: 'Montserrat',
+                                      ),
                                     ),
-                                  ),
-                                );
-                              }
-                              return Center(
-                                child: Text(
-                                  'Khởi tạo...',
-                                  style: Theme.of(
-                                    context,
-                                  ).textTheme.bodyMedium?.copyWith(
-                                    fontSize: 16,
-                                    color: AppColors.white,
-                                    fontFamily: 'Montserrat',
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
+                                  );
+                                },
+                              ),
+                            ),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -485,11 +560,7 @@ class _DiscountFormState extends State<DiscountForm> {
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xFF121212), Color(0xFF1E1E1E)],
-        ),
+        color: Color(0xFF1E1E1E),
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       child: Padding(
@@ -593,7 +664,7 @@ class _DiscountFormState extends State<DiscountForm> {
                 ListTile(
                   title: Text(
                     _validUntil == null
-                        ? 'Chọn ngày hết hạn'
+                        ? 'Chọn ngày hết hạn (không bắt buộc)'
                         : 'Hết hạn: ${_validUntil!.toString().substring(0, 10)}',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: AppColors.white,
@@ -630,20 +701,23 @@ class _DiscountFormState extends State<DiscountForm> {
                     )
                     : ElevatedButton(
                       onPressed: () async {
-                        if (_formKey.currentState!.validate() &&
-                            _validUntil != null) {
+                        if (_formKey.currentState!.validate()) {
                           setState(() {
                             _isLoading = true;
                             _errorMessage = null;
                           });
                           try {
                             final discount = DiscountModel(
-                              code: _codeController.text,
+                              code: _codeController.text.trim(),
                               discountPercentage: double.parse(
                                 _percentageController.text,
                               ),
                               validUntil: _validUntil,
                               isActive: true,
+                              documentId: '', // Để trống, Firestore sẽ tạo ID
+                            );
+                            print(
+                              'Adding discount: ${discount.code}, documentId: auto-generated',
                             );
                             await widget.flightService.addDiscount(discount);
                             context.read<AdminDiscountBloc>().add(
@@ -661,7 +735,8 @@ class _DiscountFormState extends State<DiscountForm> {
                           }
                         } else {
                           setState(() {
-                            _errorMessage = 'Vui lòng điền đầy đủ thông tin';
+                            _errorMessage =
+                                'Vui lòng điền đầy đủ thông tin bắt buộc';
                           });
                         }
                       },

@@ -1,39 +1,70 @@
-// widgets/home/flight_search_bar.dart
-// Widget thanh tìm kiếm chuyến bay
 import 'package:flutter/material.dart';
-import 'package:booking_app/utils/app_colors.dart';
-import 'package:booking_app/routes/app_routes.dart';
+import 'dart:ui';
+import 'package:booking_app/screens/flight_selection/date_selection_screen.dart';
 
 class FlightSearchBar extends StatelessWidget {
-  const FlightSearchBar({super.key});
+  const FlightSearchBar({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.pushNamed(context, AppRoutes.dateSelection);
-      },
-      child: Container(
-        height: 50,
-        decoration: BoxDecoration(
-          color: AppColors.grey_2,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.grey),
-        ),
-        child: Row(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12.0),
-              child: Icon(Icons.search, color: AppColors.primaryColor),
+    final primaryColor = Theme.of(context).primaryColor;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const DateSelectionScreen(),
             ),
-            Text(
-              'Tìm kiếm chuyến bay',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppColors.grey,
-                fontSize: 16,
-              ),
+          );
+        },
+        splashColor: primaryColor.withAlpha(20),
+        borderRadius: BorderRadius.circular(16),
+        child: Ink(
+          height: 56,
+          decoration: BoxDecoration(
+            color: Colors.grey[50],
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: primaryColor.withAlpha(15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.search_rounded,
+                    color: primaryColor,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'Tìm kiếm chuyến bay',
+                  style: TextStyle(color: Colors.grey[600], fontSize: 15),
+                ),
+                const Spacer(),
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: primaryColor.withAlpha(15),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.flight_takeoff_rounded,
+                    color: primaryColor,
+                    size: 18,
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

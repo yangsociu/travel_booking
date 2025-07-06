@@ -10,12 +10,26 @@ class FlightTicketCard extends StatelessWidget {
   final GlobalKey<ScaffoldMessengerState>? scaffoldMessengerKey;
 
   const FlightTicketCard({
-    Key? key,
+    super.key,
     required this.flight,
     this.onTap,
     this.isSelected = false,
     this.scaffoldMessengerKey,
-  }) : super(key: key);
+  });
+
+  // Hàm ánh xạ airlineId sang đường dẫn ảnh logo
+  String? _getAirlineLogo(String airlineId) {
+    switch (airlineId) {
+      case 'VN':
+        return 'assets/images/vietnam_airlines.png';
+      case 'VJ':
+        return 'assets/images/vietjet_air.jpg';
+      case 'BB':
+        return 'assets/images/bamboo_airways.png';
+      default:
+        return null; // Không có logo cho airlineId không xác định
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,6 +38,7 @@ class FlightTicketCard extends StatelessWidget {
     final arrivalTime = timeFormat.format(flight.arrivalTime);
     final duration = flight.arrivalTime.difference(flight.departureTime);
     final durationText = '${duration.inHours}h ${duration.inMinutes % 60}m';
+    final logoPath = _getAirlineLogo(flight.airlineId);
 
     return GestureDetector(
       onTap: () {
@@ -68,89 +83,105 @@ class FlightTicketCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.flight_takeoff,
-                          size: 20,
-                          color: AppColors.primaryColor,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          '${flight.departureCity} (${flight.departureAirportName})',
-                          style: Theme.of(
-                            context,
-                          ).textTheme.bodyMedium?.copyWith(
-                            color: AppColors.grey_2,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
+                Flexible(
+                  flex: 1,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.flight_takeoff,
+                            size: 20,
+                            color: AppColors.primaryColor,
                           ),
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: Text(
+                              '${flight.departureCity} (${flight.departureAirportName})',
+                              style: Theme.of(
+                                context,
+                              ).textTheme.bodyMedium?.copyWith(
+                                color: AppColors.grey_2,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        flight.departureAirportCode,
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          color: AppColors.black,
+                          fontSize: 22,
+                          fontWeight: FontWeight.w700,
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      flight.departureAirportCode,
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        color: AppColors.black,
-                        fontSize: 22,
-                        fontWeight: FontWeight.w700,
                       ),
-                    ),
-                    Text(
-                      departureTime,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.black,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                      Text(
+                        departureTime,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: AppColors.black,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Row(
-                      children: [
-                        Text(
-                          '${flight.arrivalCity} (${flight.arrivalAirportName})',
-                          style: Theme.of(
-                            context,
-                          ).textTheme.bodyMedium?.copyWith(
-                            color: AppColors.grey_2,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
+                const SizedBox(width: 8),
+                Flexible(
+                  flex: 1,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              '${flight.arrivalCity} (${flight.arrivalAirportName})',
+                              style: Theme.of(
+                                context,
+                              ).textTheme.bodyMedium?.copyWith(
+                                color: AppColors.grey_2,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              textAlign: TextAlign.right,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        Icon(
-                          Icons.flight_land,
-                          size: 20,
-                          color: AppColors.primaryColor,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      flight.arrivalAirportCode,
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        color: AppColors.black,
-                        fontSize: 22,
-                        fontWeight: FontWeight.w700,
+                          const SizedBox(width: 8),
+                          Icon(
+                            Icons.flight_land,
+                            size: 20,
+                            color: AppColors.primaryColor,
+                          ),
+                        ],
                       ),
-                    ),
-                    Text(
-                      arrivalTime,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.black,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                      const SizedBox(height: 6),
+                      Text(
+                        flight.arrivalAirportCode,
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          color: AppColors.black,
+                          fontSize: 22,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
-                    ),
-                  ],
+                      Text(
+                        arrivalTime,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: AppColors.black,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -185,6 +216,29 @@ class FlightTicketCard extends StatelessWidget {
                   ),
                 ],
               ),
+            ),
+            const SizedBox(height: 12),
+            // Logo hãng hàng không
+            Center(
+              child:
+                  logoPath != null
+                      ? Image.asset(
+                        logoPath,
+                        width: 40,
+                        height: 40,
+                        fit: BoxFit.contain,
+                        errorBuilder:
+                            (context, error, stackTrace) => Icon(
+                              Icons.flight,
+                              size: 40,
+                              color: AppColors.grey.withOpacity(0.5),
+                            ),
+                      )
+                      : Icon(
+                        Icons.flight,
+                        size: 40,
+                        color: AppColors.grey.withOpacity(0.5),
+                      ),
             ),
             const SizedBox(height: 12),
             // Mã chuyến bay và giá vé

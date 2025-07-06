@@ -60,12 +60,18 @@ class _PaymentScreenState extends State<PaymentScreen> {
     final user = firebase_auth.FirebaseAuth.instance.currentUser;
     final userId = user?.uid ?? '';
     if (userId.isNotEmpty) {
-      final discounts = await context.read<FlightService>().getUserDiscounts(
-        userId,
-      );
-      setState(() {
-        _userDiscounts = discounts;
-      });
+      try {
+        final discounts = await context.read<FlightService>().getUserDiscounts(
+          userId,
+        );
+        setState(() {
+          _userDiscounts = discounts;
+        });
+      } catch (e) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Lỗi khi tải mã giảm giá: $e')));
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Vui lòng đăng nhập để xem mã giảm giá!')),
@@ -113,16 +119,17 @@ class _PaymentScreenState extends State<PaymentScreen> {
         (d) =>
             d.code == code &&
             d.isActive &&
-            (d.validUntil?.isAfter(DateTime.now()) ?? false),
+            (d.validUntil == null || d.validUntil!.isAfter(DateTime.now())),
         orElse:
             () => DiscountModel(
               code: '',
               discountPercentage: 0.0,
               validUntil: null,
               isActive: false,
+              documentId: '', // Thêm documentId
             ),
       );
-      if (discount.code.isNotEmpty) {
+      if (discount.code.isNotEmpty && discount.documentId.isNotEmpty) {
         setState(() {
           _selectedDiscountCode = code;
           _discountPercentage = discount.discountPercentage;
@@ -161,17 +168,34 @@ class _PaymentScreenState extends State<PaymentScreen> {
           child: BlocListener<PaymentBloc, PaymentState>(
             listener: (context, state) async {
               if (state is PaymentSuccess) {
-                // Đánh dấu mã giảm giá là đã sử dụng
                 final user = firebase_auth.FirebaseAuth.instance.currentUser;
                 final userId = user?.uid ?? '';
                 if (_selectedDiscountCode != null && userId.isNotEmpty) {
                   try {
-                    await context.read<FlightService>().markDiscountAsUsed(
-                      userId,
-                      _selectedDiscountCode!,
+                    final selectedDiscount = _userDiscounts.firstWhere(
+                      (d) => d.code == _selectedDiscountCode,
+                      orElse:
+                          () => DiscountModel(
+                            code: '',
+                            discountPercentage: 0.0,
+                            validUntil: null,
+                            isActive: false,
+                            documentId: '',
+                          ),
                     );
-                    // Làm mới danh sách mã giảm giá
-                    await _loadUserDiscounts();
+                    if (selectedDiscount.documentId.isNotEmpty) {
+                      await context.read<FlightService>().markDiscountAsUsed(
+                        userId,
+                        _selectedDiscountCode!,
+                      );
+                      await _loadUserDiscounts(); // Làm mới danh sách mã
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Lỗi: Mã giảm giá không hợp lệ'),
+                        ),
+                      );
+                    }
                   } catch (e) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
@@ -527,8 +551,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                         returnSelectedSeats: widget.returnSelectedSeats,
                         phoneNumber: widget.phoneNumber,
                         email: widget.email,
-                        discountPercentage:
-                            _discountPercentage, // Truyền discountPercentage vào
+                        discountPercentage: _discountPercentage,
                       ),
                     ],
                   ],
@@ -592,105 +615,9 @@ class TicketInfoWidget extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.flight_takeoff,
-                        size: 20,
-                        color: AppColors.primaryColor,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        '${flight.departureCity} (${flight.departureAirportName})',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontFamily: 'Montserrat',
-                          fontSize: 14,
-                          color: AppColors.black,
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    flight.departureAirportCode,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      fontFamily: 'Montserrat',
-                      fontSize: 18,
-                      color: AppColors.black,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  Text(
-                    departureTime,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontFamily: 'Montserrat',
-                      fontSize: 14,
-                      color: AppColors.black,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-              Icon(
-                Icons.flight,
-                size: 24,
-                color: AppColors.primaryColor.withOpacity(0.7),
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Row(
-                    children: [
-                      Text(
-                        '${flight.arrivalCity} (${flight.arrivalAirportName})',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontFamily: 'Montserrat',
-                          fontSize: 14,
-                          color: AppColors.black,
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Icon(
-                        Icons.flight_land,
-                        size: 20,
-                        color: AppColors.primaryColor,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    flight.arrivalAirportCode,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      fontFamily: 'Montserrat',
-                      fontSize: 18,
-                      color: AppColors.black,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  Text(
-                    arrivalTime,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontFamily: 'Montserrat',
-                      fontSize: 14,
-                      color: AppColors.black,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          if (returnFlight != null) ...[
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
+              Flexible(
+                flex: 1,
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
@@ -701,22 +628,26 @@ class TicketInfoWidget extends StatelessWidget {
                           color: AppColors.primaryColor,
                         ),
                         const SizedBox(width: 8),
-                        Text(
-                          '${returnFlight!.departureCity} (${returnFlight!.departureAirportName})',
-                          style: Theme.of(
-                            context,
-                          ).textTheme.bodyMedium?.copyWith(
-                            fontFamily: 'Montserrat',
-                            fontSize: 14,
-                            color: AppColors.black,
-                            fontWeight: FontWeight.w400,
+                        Flexible(
+                          child: Text(
+                            '${flight.departureCity} (${flight.departureAirportName})',
+                            style: Theme.of(
+                              context,
+                            ).textTheme.bodyMedium?.copyWith(
+                              fontFamily: 'Montserrat',
+                              fontSize: 14,
+                              color: AppColors.black,
+                              fontWeight: FontWeight.w400,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      returnFlight!.departureAirportCode,
+                      flight.departureAirportCode,
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         fontFamily: 'Montserrat',
                         fontSize: 18,
@@ -725,7 +656,7 @@ class TicketInfoWidget extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      timeFormat.format(returnFlight!.departureTime),
+                      departureTime,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         fontFamily: 'Montserrat',
                         fontSize: 14,
@@ -735,25 +666,33 @@ class TicketInfoWidget extends StatelessWidget {
                     ),
                   ],
                 ),
-                Icon(
-                  Icons.flight,
-                  size: 24,
-                  color: AppColors.primaryColor.withOpacity(0.7),
-                ),
-                Column(
+              ),
+              Icon(
+                Icons.flight,
+                size: 24,
+                color: AppColors.primaryColor.withOpacity(0.7),
+              ),
+              Flexible(
+                flex: 1,
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Row(
                       children: [
-                        Text(
-                          '${returnFlight!.arrivalCity} (${returnFlight!.arrivalAirportName})',
-                          style: Theme.of(
-                            context,
-                          ).textTheme.bodyMedium?.copyWith(
-                            fontFamily: 'Montserrat',
-                            fontSize: 14,
-                            color: AppColors.black,
-                            fontWeight: FontWeight.w400,
+                        Flexible(
+                          child: Text(
+                            '${flight.arrivalCity} (${flight.arrivalAirportName})',
+                            style: Theme.of(
+                              context,
+                            ).textTheme.bodyMedium?.copyWith(
+                              fontFamily: 'Montserrat',
+                              fontSize: 14,
+                              color: AppColors.black,
+                              fontWeight: FontWeight.w400,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                            textAlign: TextAlign.right,
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -766,7 +705,7 @@ class TicketInfoWidget extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      returnFlight!.arrivalAirportCode,
+                      flight.arrivalAirportCode,
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         fontFamily: 'Montserrat',
                         fontSize: 18,
@@ -775,7 +714,7 @@ class TicketInfoWidget extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      timeFormat.format(returnFlight!.arrivalTime),
+                      arrivalTime,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         fontFamily: 'Montserrat',
                         fontSize: 14,
@@ -784,6 +723,124 @@ class TicketInfoWidget extends StatelessWidget {
                       ),
                     ),
                   ],
+                ),
+              ),
+            ],
+          ),
+          if (returnFlight != null) ...[
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Flexible(
+                  flex: 1,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.flight_takeoff,
+                            size: 20,
+                            color: AppColors.primaryColor,
+                          ),
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: Text(
+                              '${returnFlight!.departureCity} (${returnFlight!.departureAirportName})',
+                              style: Theme.of(
+                                context,
+                              ).textTheme.bodyMedium?.copyWith(
+                                fontFamily: 'Montserrat',
+                                fontSize: 14,
+                                color: AppColors.black,
+                                fontWeight: FontWeight.w400,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        returnFlight!.departureAirportCode,
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          fontFamily: 'Montserrat',
+                          fontSize: 18,
+                          color: AppColors.black,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        timeFormat.format(returnFlight!.departureTime),
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontFamily: 'Montserrat',
+                          fontSize: 14,
+                          color: AppColors.black,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.flight,
+                  size: 24,
+                  color: AppColors.primaryColor.withOpacity(0.7),
+                ),
+                Flexible(
+                  flex: 1,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              '${returnFlight!.arrivalCity} (${returnFlight!.arrivalAirportName})',
+                              style: Theme.of(
+                                context,
+                              ).textTheme.bodyMedium?.copyWith(
+                                fontFamily: 'Montserrat',
+                                fontSize: 14,
+                                color: AppColors.black,
+                                fontWeight: FontWeight.w400,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              textAlign: TextAlign.right,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Icon(
+                            Icons.flight_land,
+                            size: 20,
+                            color: AppColors.primaryColor,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        returnFlight!.arrivalAirportCode,
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          fontFamily: 'Montserrat',
+                          fontSize: 18,
+                          color: AppColors.black,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        timeFormat.format(returnFlight!.arrivalTime),
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontFamily: 'Montserrat',
+                          fontSize: 14,
+                          color: AppColors.black,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),

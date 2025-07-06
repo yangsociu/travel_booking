@@ -4,16 +4,16 @@ import 'package:equatable/equatable.dart';
 class DiscountModel extends Equatable {
   final String code;
   final double discountPercentage;
-  final DateTime? validUntil; // Thay đổi thành nullable
+  final DateTime? validUntil;
   final bool isActive;
   final String documentId;
 
   const DiscountModel({
     required this.code,
     required this.discountPercentage,
-    this.validUntil, // Xóa required
+    this.validUntil,
     required this.isActive,
-    this.documentId = '',
+    required this.documentId, // Yêu cầu documentId bắt buộc
   });
 
   factory DiscountModel.fromJson(Map<String, dynamic> json, String documentId) {
@@ -26,10 +26,10 @@ class DiscountModel extends Equatable {
           json['validUntil'] != null
               ? (json['validUntil'] is Timestamp
                   ? (json['validUntil'] as Timestamp).toDate()
-                  : DateTime.parse(json['validUntil'] as String))
-              : null, // Hỗ trợ null
+                  : DateTime.tryParse(json['validUntil'] as String))
+              : null,
       isActive: json['isActive'] as bool? ?? false,
-      documentId: json['documentId'] ?? '',
+      documentId: documentId, // Lấy từ tham số
     );
   }
 
@@ -43,5 +43,11 @@ class DiscountModel extends Equatable {
   }
 
   @override
-  List<Object?> get props => [code, discountPercentage, validUntil, isActive];
+  List<Object?> get props => [
+    code,
+    discountPercentage,
+    validUntil,
+    isActive,
+    documentId,
+  ];
 }

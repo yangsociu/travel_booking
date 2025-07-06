@@ -18,6 +18,9 @@ class _RegisterFormState extends State<RegisterForm> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
+  String? _errorMessage;
 
   @override
   void dispose() {
@@ -44,10 +47,11 @@ class _RegisterFormState extends State<RegisterForm> {
       ),
       child: Column(
         children: [
-          const Icon(
-            Icons.flight_takeoff,
-            size: 48,
-            color: AppColors.primaryColor,
+          Image.asset(
+            'assets/images/logo.png',
+            width: 180,
+            height: 180,
+            fit: BoxFit.contain,
           ),
           const SizedBox(height: 16),
           Text(
@@ -68,40 +72,189 @@ class _RegisterFormState extends State<RegisterForm> {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),
-          CustomTextField(
+          TextFormField(
             controller: _emailController,
-            label: 'Email',
+            decoration: InputDecoration(
+              prefixIcon: const Icon(
+                Icons.email_outlined,
+                color: Colors.lightBlue,
+                size: 26,
+              ),
+              labelText: 'Email',
+              labelStyle: const TextStyle(color: Colors.black87, fontSize: 16),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(22),
+                borderSide: const BorderSide(color: Colors.black, width: 1.2),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(22),
+                borderSide: const BorderSide(color: Colors.black, width: 1.2),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(22),
+                borderSide: const BorderSide(color: Colors.black, width: 1.8),
+              ),
+              filled: true,
+              fillColor: Colors.white,
+              contentPadding: const EdgeInsets.symmetric(
+                vertical: 8,
+                horizontal: 8,
+              ),
+              errorText:
+                  _errorMessage == 'Email không hợp lệ.' ? _errorMessage : null,
+            ),
             keyboardType: TextInputType.emailAddress,
           ),
           const SizedBox(height: 16),
-          CustomTextField(
+          TextFormField(
             controller: _passwordController,
-            label: 'Mật khẩu',
-            obscureText: true,
+            decoration: InputDecoration(
+              prefixIcon: const Icon(
+                Icons.lock_outline,
+                color: Colors.lightBlue,
+                size: 26,
+              ),
+              labelText: 'Mật khẩu',
+              labelStyle: const TextStyle(color: Colors.black87, fontSize: 16),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(22),
+                borderSide: const BorderSide(color: Colors.black, width: 1.2),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(22),
+                borderSide: const BorderSide(color: Colors.black, width: 1.2),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(22),
+                borderSide: const BorderSide(color: Colors.black, width: 1.8),
+              ),
+              filled: true,
+              fillColor: Colors.white,
+              contentPadding: const EdgeInsets.symmetric(
+                vertical: 8,
+                horizontal: 8,
+              ),
+              errorText:
+                  _errorMessage == 'Mật khẩu không hợp lệ.'
+                      ? _errorMessage
+                      : null,
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                  color: Colors.lightBlue,
+                ),
+                onPressed: () {
+                  setState(() {
+                    _obscurePassword = !_obscurePassword;
+                  });
+                },
+              ),
+            ),
+            obscureText: _obscurePassword,
           ),
           const SizedBox(height: 16),
-          CustomTextField(
+          TextFormField(
             controller: _confirmPasswordController,
-            label: 'Xác nhận mật khẩu',
-            obscureText: true,
+            decoration: InputDecoration(
+              prefixIcon: const Icon(
+                Icons.lock_outline,
+                color: Colors.lightBlue,
+                size: 26,
+              ),
+              labelText: 'Xác nhận mật khẩu',
+              labelStyle: const TextStyle(color: Colors.black87, fontSize: 16),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(22),
+                borderSide: const BorderSide(color: Colors.black, width: 1.2),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(22),
+                borderSide: const BorderSide(color: Colors.black, width: 1.2),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(22),
+                borderSide: const BorderSide(color: Colors.black, width: 1.8),
+              ),
+              filled: true,
+              fillColor: Colors.white,
+              contentPadding: const EdgeInsets.symmetric(
+                vertical: 8,
+                horizontal: 8,
+              ),
+              errorText:
+                  _errorMessage == 'Mật khẩu không khớp' ? _errorMessage : null,
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _obscureConfirmPassword
+                      ? Icons.visibility_off
+                      : Icons.visibility,
+                  color: Colors.lightBlue,
+                ),
+                onPressed: () {
+                  setState(() {
+                    _obscureConfirmPassword = !_obscureConfirmPassword;
+                  });
+                },
+              ),
+            ),
+            obscureText: _obscureConfirmPassword,
           ),
           const SizedBox(height: 20),
-          CustomButton(
-            text: 'Đăng Ký',
-            onPressed: () {
-              if (_passwordController.text == _confirmPasswordController.text) {
-                context.read<AuthBloc>().add(
-                  RegisterRequested(
-                    email: _emailController.text,
-                    password: _passwordController.text,
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () {
+                if (_passwordController.text ==
+                    _confirmPasswordController.text) {
+                  context.read<AuthBloc>().add(
+                    RegisterRequested(
+                      email: _emailController.text,
+                      password: _passwordController.text,
+                    ),
+                  );
+                } else {
+                  setState(() {
+                    _errorMessage = 'Mật khẩu không khớp';
+                  });
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(22),
+                ),
+                elevation: 0,
+                backgroundColor: Colors.transparent,
+                shadowColor: Colors.transparent,
+                splashFactory: InkRipple.splashFactory,
+              ),
+              child: Ink(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.primaryColor,
+                      AppColors.primaryColor.withOpacity(0.85),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                );
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Mật khẩu không khớp')),
-                );
-              }
-            },
+                  borderRadius: BorderRadius.circular(22),
+                ),
+                child: Container(
+                  alignment: Alignment.center,
+                  height: 54,
+                  child: Text(
+                    'Đăng Ký',
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 18,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ),
           const SizedBox(height: 16),
           TextButton(

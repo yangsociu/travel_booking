@@ -36,7 +36,7 @@ ThemeData appTheme() {
     colorScheme: ColorScheme.fromSwatch().copyWith(
       primary: AppColors.primaryColor,
       secondary: AppColors.grey,
-      background: AppColors.white,
+      surface: AppColors.white,
     ),
   );
 }

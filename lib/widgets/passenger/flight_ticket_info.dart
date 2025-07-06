@@ -1,5 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:booking_app/models/flight_model.dart';
 import 'package:booking_app/utils/app_colors.dart';
 import 'package:intl/intl.dart';
@@ -42,13 +41,18 @@ class FlightTicketInfo extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                flight.departureAirportCode,
-                style: const TextStyle(
-                  color: AppColors.white,
-                  fontFamily: 'Montserrat',
-                  fontSize: 28,
-                  fontWeight: FontWeight.w700,
+              Flexible(
+                flex: 2,
+                child: Text(
+                  flight.departureAirportCode,
+                  style: const TextStyle(
+                    color: AppColors.white,
+                    fontFamily: 'Montserrat',
+                    fontSize: 28,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
                 ),
               ),
               Row(
@@ -66,13 +70,19 @@ class FlightTicketInfo extends StatelessWidget {
                   ),
                 ],
               ),
-              Text(
-                flight.arrivalAirportCode,
-                style: const TextStyle(
-                  color: AppColors.white,
-                  fontFamily: 'Montserrat',
-                  fontSize: 28,
-                  fontWeight: FontWeight.w700,
+              Flexible(
+                flex: 2,
+                child: Text(
+                  flight.arrivalAirportCode,
+                  style: const TextStyle(
+                    color: AppColors.white,
+                    fontFamily: 'Montserrat',
+                    fontSize: 28,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  textAlign: TextAlign.right,
                 ),
               ),
             ],
@@ -81,22 +91,31 @@ class FlightTicketInfo extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                dateFormat.format(flight.departureTime),
-                style: const TextStyle(
-                  color: AppColors.white,
-                  fontFamily: 'Montserrat',
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
+              Flexible(
+                child: Text(
+                  dateFormat.format(flight.departureTime),
+                  style: const TextStyle(
+                    color: AppColors.white,
+                    fontFamily: 'Montserrat',
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
                 ),
               ),
-              Text(
-                timeFormat.format(flight.departureTime),
-                style: const TextStyle(
-                  color: AppColors.white,
-                  fontFamily: 'Montserrat',
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
+              Flexible(
+                child: Text(
+                  timeFormat.format(flight.departureTime),
+                  style: const TextStyle(
+                    color: AppColors.white,
+                    fontFamily: 'Montserrat',
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  textAlign: TextAlign.right,
                 ),
               ),
             ],

@@ -32,17 +32,34 @@ class HotDestinations extends StatelessWidget {
                       height: 1.2,
                     ),
                   ),
-                  GestureDetector(
+                  InkWell(
                     onTap: () {
-                      // TODO: Xử lý sự kiện khi nhấn "Xem thêm"
+                      // Xử lý sự kiện khi nhấn "Xem thêm"
+                      // Giữ nguyên TODO này theo yêu cầu giữ logic
                     },
-                    child: Text(
-                      'Xem thêm',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.primaryColor,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        decoration: TextDecoration.underline,
+                    borderRadius: BorderRadius.circular(20),
+                    child: Padding(
+                      padding: const EdgeInsets.all(4.0),
+                      child: Row(
+                        children: [
+                          Text(
+                            'Xem thêm',
+                            style: Theme.of(
+                              context,
+                            ).textTheme.bodyMedium?.copyWith(
+                              color: AppColors.primaryColor,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Icon(
+                            Icons.arrow_forward_ios,
+                            size: 14,
+                            color: AppColors.primaryColor,
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -51,29 +68,45 @@ class HotDestinations extends StatelessWidget {
               const SizedBox(height: 20),
               SizedBox(
                 height: 380,
-                child: PageView(
+                child: PageView.builder(
                   controller: PageController(viewportFraction: 0.82),
-                  children:
-                      state.destinations
-                          .asMap()
-                          .entries
-                          .map(
-                            (entry) => _buildDestinationCard(
-                              context: context,
-                              index: entry.key,
-                              destination: entry.value,
-                              isSelected:
-                                  state.selectedDestinationIndex == entry.key,
-                              onTap: () {
-                                context.read<HomeBloc>().add(
-                                  SelectDestination(entry.key),
-                                );
-                              },
-                            ),
-                          )
-                          .toList(),
+                  itemCount: state.destinations.length,
+                  itemBuilder: (context, index) {
+                    return _buildDestinationCard(
+                      context: context,
+                      index: index,
+                      destination: state.destinations[index],
+                      isSelected: state.selectedDestinationIndex == index,
+                      onTap: () {
+                        context.read<HomeBloc>().add(SelectDestination(index));
+                      },
+                    );
+                  },
                 ),
               ),
+              // Chỉ báo trang - thêm mới
+              if (state.destinations.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 16.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(
+                      state.destinations.length,
+                      (index) => Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                        height: 8,
+                        width: index == state.selectedDestinationIndex ? 24 : 8,
+                        decoration: BoxDecoration(
+                          color:
+                              index == state.selectedDestinationIndex
+                                  ? AppColors.primaryColor
+                                  : AppColors.grey.withAlpha(75),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
             ],
           ),
         );
@@ -94,127 +127,106 @@ class HotDestinations extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Center(
-        child: Container(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 220),
+          curve: Curves.easeOut,
           width: width,
           height: height,
-          margin: const EdgeInsets.symmetric(horizontal: 8.0),
+          margin: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(28),
             boxShadow: [
               BoxShadow(
-                color: Colors.grey.withOpacity(0.2),
-                spreadRadius: 3,
-                blurRadius: 10,
-                offset: const Offset(0, 4),
+                color: Colors.blue.withOpacity(0.10),
+                blurRadius: 18,
+                offset: const Offset(0, 6),
               ),
             ],
           ),
           child: Stack(
             children: [
-              Positioned(
-                left: 0,
-                top: 0,
+              // Background card
+              Positioned.fill(
                 child: Container(
-                  width: width,
-                  height: height,
-                  decoration: ShapeDecoration(
+                  decoration: BoxDecoration(
                     color: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
+                    borderRadius: BorderRadius.circular(28),
                   ),
                 ),
               ),
+              // Image
               Positioned(
                 left: 0,
                 top: 0,
                 child: ClipRRect(
                   borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(20),
-                    topRight: Radius.circular(20),
+                    topLeft: Radius.circular(28),
+                    topRight: Radius.circular(28),
                   ),
                   child: Image.asset(
                     destination.image,
                     width: width,
-                    height: height * 0.62,
+                    height: height * 0.60,
                     fit: BoxFit.cover,
                   ),
                 ),
               ),
+              // Nội dung dưới ảnh
               Positioned(
-                left: width * 0.08,
-                top: height * 0.65,
-                child: Text(
-                  destination.name,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                    height: 1.3,
-                    color: AppColors.black,
+                left: 0,
+                right: 0,
+                top: height * 0.60,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 18.0,
+                    vertical: 10,
                   ),
-                ),
-              ),
-              Positioned(
-                right: width * 0.08,
-                top: height * 0.65,
-                child: Text(
-                  destination.price,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.primaryColor,
-                    fontSize: 24,
-                    fontWeight: FontWeight.w700,
-                    height: 1.2,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: width * 0.08,
-                top: height * 0.74,
-                child: SizedBox(
-                  width: width * 0.84,
-                  height: height * 0.13,
-                  child: Text(
-                    destination.description,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                      height: 1.3,
-                      color: AppColors.grey.withOpacity(0.8),
-                    ),
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: width * 0.08,
-                bottom: height * 0.04,
-                child: Container(
-                  width: width * 0.5,
-                  height: height * 0.09,
-                  decoration: ShapeDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        AppColors.primaryColor,
-                        AppColors.primaryColor.withOpacity(0.8),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: Center(
-                    child: Text(
-                      'Tìm hiểu thêm',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.white,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        height: 1.3,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Row tên điểm đến (bỏ giá tiền)
+                      Text(
+                        destination.name,
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.primaryColor,
+                        ),
                       ),
-                    ),
+                      const SizedBox(height: 4),
+                      Text(
+                        destination.description,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontSize: 13,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () {},
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primaryColor,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(18),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            elevation: 0,
+                          ),
+                          child: const Text(
+                            'Tìm hiểu thêm',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),

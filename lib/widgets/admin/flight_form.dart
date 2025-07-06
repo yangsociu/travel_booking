@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:booking_app/models/flight_model.dart';
+import 'package:booking_app/models/airline_model.dart';
 import 'package:booking_app/utils/app_colors.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:booking_app/blocs/admin_flight/admin_flight_bloc.dart';
@@ -26,9 +27,12 @@ class _FlightFormState extends State<FlightForm> {
   String? _arrivalAirportName;
   String? _departureAirportCode;
   String? _arrivalAirportCode;
+  String? _airlineId;
   DateTime? _departureTime;
   DateTime? _arrivalTime;
   List<Map<String, String>> _cities = [];
+  List<AirlineModel> _airlines = [];
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -43,11 +47,17 @@ class _FlightFormState extends State<FlightForm> {
     _arrivalAirportName = widget.flight?.arrivalAirportName;
     _departureAirportCode = widget.flight?.departureAirportCode;
     _arrivalAirportCode = widget.flight?.arrivalAirportCode;
+    _airlineId = widget.flight?.airlineId;
     _departureTime = widget.flight?.departureTime ?? DateTime.now();
     _arrivalTime =
         widget.flight?.arrivalTime ??
         DateTime.now().add(const Duration(hours: 1, minutes: 30));
-    _loadCities();
+
+    // Log để debug
+    print('Initial flight data: ${widget.flight?.toJson()}');
+    print('Initial _airlineId: $_airlineId');
+
+    _loadData();
   }
 
   @override
@@ -57,18 +67,59 @@ class _FlightFormState extends State<FlightForm> {
     super.dispose();
   }
 
+  Future<void> _loadData() async {
+    try {
+      setState(() {
+        _isLoading = true;
+      });
+      await Future.wait([_loadCities(), _loadAirlines()]);
+    } catch (e) {
+      print('Error loading data: $e');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
   Future<void> _loadCities() async {
     try {
       final cities = await context.read<FlightService>().getCities();
       setState(() {
         _cities = cities;
       });
-      print('Loaded cities: $_cities');
+      print('Loaded cities: ${cities.length}');
     } catch (e) {
       print('Error loading cities: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Không thể tải danh sách thành phố: $e'),
+          backgroundColor: const Color(0xFF1E1E1E),
+        ),
+      );
+    }
+  }
+
+  Future<void> _loadAirlines() async {
+    try {
+      final airlines = await context.read<FlightService>().getAirlines();
+      setState(() {
+        _airlines = airlines;
+        // Đảm bảo _airlineId hợp lệ
+        if (_airlineId != null &&
+            !airlines.any((airline) => airline.id == _airlineId)) {
+          print(
+            'Current _airlineId $_airlineId not found in airlines, resetting to null',
+          );
+          _airlineId = airlines.isNotEmpty ? airlines.first.id : null;
+        }
+      });
+      print('Loaded airlines: ${airlines.map((a) => a.name).toList()}');
+    } catch (e) {
+      print('Error loading airlines: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Không thể tải danh sách hãng hàng không: $e'),
           backgroundColor: const Color(0xFF1E1E1E),
         ),
       );
@@ -126,6 +177,14 @@ class _FlightFormState extends State<FlightForm> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryColor),
+        ),
+      );
+    }
+
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
@@ -248,7 +307,7 @@ class _FlightFormState extends State<FlightForm> {
                             content: Text(
                               'Điểm đi và điểm đến không được trùng nhau',
                             ),
-                            backgroundColor: const Color(0xFF1E1E1E),
+                            backgroundColor: Color(0xFF1E1E1E),
                           ),
                         );
                         return;
@@ -259,8 +318,9 @@ class _FlightFormState extends State<FlightForm> {
                           (c) => c['name'] == value,
                           orElse:
                               () => {
-                                'airportName': 'Unknown',
-                                'airportCode': 'Unknown',
+                                'name': 'UNKNOWN',
+                                'airportName': 'UNKNOWN',
+                                'airportCode': 'UNKNOWN',
                               },
                         );
                         _departureAirportName = city['airportName'];
@@ -273,6 +333,13 @@ class _FlightFormState extends State<FlightForm> {
                     validator:
                         (value) =>
                             value == null ? 'Vui lòng chọn điểm đi' : null,
+                    hint: Text(
+                      _cities.isEmpty ? 'Không có thành phố' : 'Chọn điểm đi',
+                      style: TextStyle(
+                        color: AppColors.white.withOpacity(0.5),
+                        fontFamily: 'Montserrat',
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -382,7 +449,7 @@ class _FlightFormState extends State<FlightForm> {
                             content: Text(
                               'Điểm đến và điểm đi không được trùng nhau',
                             ),
-                            backgroundColor: const Color(0xFF1E1E1E),
+                            backgroundColor: Color(0xFF1E1E1E),
                           ),
                         );
                         return;
@@ -393,8 +460,9 @@ class _FlightFormState extends State<FlightForm> {
                           (c) => c['name'] == value,
                           orElse:
                               () => {
-                                'airportName': 'Unknown',
-                                'airportCode': 'Unknown',
+                                'name': 'UNKNOWN',
+                                'airportName': 'UNKNOWN',
+                                'airportCode': 'UNKNOWN',
                               },
                         );
                         _arrivalAirportName = city['airportName'];
@@ -407,6 +475,13 @@ class _FlightFormState extends State<FlightForm> {
                     validator:
                         (value) =>
                             value == null ? 'Vui lòng chọn điểm đến' : null,
+                    hint: Text(
+                      _cities.isEmpty ? 'Không có thành phố' : 'Chọn điểm đến',
+                      style: TextStyle(
+                        color: AppColors.white.withOpacity(0.5),
+                        fontFamily: 'Montserrat',
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -459,6 +534,94 @@ class _FlightFormState extends State<FlightForm> {
                   style: const TextStyle(
                     color: AppColors.white,
                     fontFamily: 'Montserrat',
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Theme(
+                  data: Theme.of(
+                    context,
+                  ).copyWith(canvasColor: const Color(0xFF1E1E1E)),
+                  child: DropdownButtonFormField<String>(
+                    value:
+                        _airlines.any((airline) => airline.id == _airlineId)
+                            ? _airlineId
+                            : null,
+                    decoration: InputDecoration(
+                      labelText: 'Hãng hàng không',
+                      labelStyle: const TextStyle(
+                        color: AppColors.grey,
+                        fontFamily: 'Montserrat',
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: AppColors.white.withOpacity(0.3),
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(
+                          color: AppColors.primaryColor,
+                        ),
+                      ),
+                      fillColor: const Color(0xFF1E1E1E),
+                      filled: true,
+                    ),
+                    style: const TextStyle(
+                      color: AppColors.white,
+                      fontFamily: 'Montserrat',
+                    ),
+                    dropdownColor: const Color(0xFF1E1E1E),
+                    items:
+                        _airlines.isEmpty
+                            ? [
+                              DropdownMenuItem(
+                                value: null,
+                                child: Text(
+                                  'Không có hãng hàng không',
+                                  style: TextStyle(
+                                    color: AppColors.white.withOpacity(0.5),
+                                    fontFamily: 'Montserrat',
+                                  ),
+                                ),
+                                enabled: false,
+                              ),
+                            ]
+                            : _airlines.map((airline) {
+                              return DropdownMenuItem<String>(
+                                value: airline.id,
+                                child: Text(
+                                  airline.name,
+                                  style: const TextStyle(
+                                    color: AppColors.white,
+                                    fontFamily: 'Montserrat',
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                    onChanged:
+                        _airlines.isEmpty
+                            ? null
+                            : (value) {
+                              setState(() {
+                                _airlineId = value;
+                              });
+                              print('Selected airline ID: $value');
+                            },
+                    validator:
+                        (value) =>
+                            value == null
+                                ? 'Vui lòng chọn hãng hàng không'
+                                : null,
+                    hint: Text(
+                      _airlines.isEmpty
+                          ? 'Không có hãng hàng không'
+                          : 'Chọn hãng hàng không',
+                      style: TextStyle(
+                        color: AppColors.white.withOpacity(0.5),
+                        fontFamily: 'Montserrat',
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -544,67 +707,86 @@ class _FlightFormState extends State<FlightForm> {
                 ),
                 const SizedBox(height: 20),
                 ElevatedButton(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate() &&
-                        _departureTime != null &&
-                        _arrivalTime != null &&
-                        _departureCity != null &&
-                        _arrivalCity != null &&
-                        _departureAirportName != null &&
-                        _arrivalAirportName != null &&
-                        _departureAirportCode != null &&
-                        _arrivalAirportCode != null) {
-                      if (_departureCity == _arrivalCity) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Điểm đi và điểm đến không được trùng nhau',
-                            ),
-                            backgroundColor: const Color(0xFF1E1E1E),
-                          ),
-                        );
-                        return;
-                      }
-                      final flight = FlightModel(
-                        id:
-                            _flightIdController.text.isEmpty
-                                ? 'AUTO_${DateTime.now().millisecondsSinceEpoch}'
-                                : _flightIdController.text,
-                        documentId: widget.flight?.documentId ?? '',
-                        departureCity: _departureCity!,
-                        arrivalCity: _arrivalCity!,
-                        departureAirportName: _departureAirportName!,
-                        arrivalAirportName: _arrivalAirportName!,
-                        departureAirportCode: _departureAirportCode!,
-                        arrivalAirportCode: _arrivalAirportCode!,
-                        departureTime: _departureTime!,
-                        arrivalTime: _arrivalTime!,
-                        price: double.parse(_priceController.text),
-                      );
-                      print('Submitting flight: ${flight.toJson()}');
-                      context.read<AdminFlightBloc>().add(
-                        widget.flight == null
-                            ? AddFlight(flight)
-                            : UpdateFlight(flight),
-                      );
-                      Navigator.pop(context);
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          backgroundColor: const Color(0xFF1E1E1E),
-                          content: Text(
-                            'Vui lòng điền đầy đủ thông tin',
-                            style: Theme.of(
-                              context,
-                            ).textTheme.bodyMedium?.copyWith(
-                              color: AppColors.white,
-                              fontFamily: 'Montserrat',
-                            ),
-                          ),
-                        ),
-                      );
-                    }
-                  },
+                  onPressed:
+                      _airlines.isEmpty
+                          ? null
+                          : () {
+                            if (_formKey.currentState!.validate() &&
+                                _departureTime != null &&
+                                _arrivalTime != null &&
+                                _departureCity != null &&
+                                _arrivalCity != null &&
+                                _departureAirportName != null &&
+                                _arrivalAirportName != null &&
+                                _departureAirportCode != null &&
+                                _arrivalAirportCode != null &&
+                                _airlineId != null) {
+                              if (_departureCity == _arrivalCity) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Điểm đi và điểm đến không được trùng nhau',
+                                    ),
+                                    backgroundColor: Color(0xFF1E1E1E),
+                                  ),
+                                );
+                                return;
+                              }
+                              if (widget.flight != null &&
+                                  (widget.flight!.documentId.isEmpty)) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Không thể cập nhật: ID tài liệu không hợp lệ',
+                                    ),
+                                    backgroundColor: Color(0xFF1E1E1E),
+                                  ),
+                                );
+                                return;
+                              }
+                              final flight = FlightModel(
+                                id:
+                                    _flightIdController.text.isEmpty
+                                        ? 'AUTO_${DateTime.now().millisecondsSinceEpoch}'
+                                        : _flightIdController.text,
+                                documentId:
+                                    widget.flight?.documentId ??
+                                    'AUTO_${DateTime.now().millisecondsSinceEpoch}',
+                                departureCity: _departureCity!,
+                                arrivalCity: _arrivalCity!,
+                                departureAirportName: _departureAirportName!,
+                                arrivalAirportName: _arrivalAirportName!,
+                                departureAirportCode: _departureAirportCode!,
+                                arrivalAirportCode: _arrivalAirportCode!,
+                                departureTime: _departureTime!,
+                                arrivalTime: _arrivalTime!,
+                                price: double.parse(_priceController.text),
+                                airlineId: _airlineId!,
+                              );
+                              print('Submitting flight: ${flight.toJson()}');
+                              context.read<AdminFlightBloc>().add(
+                                widget.flight == null
+                                    ? AddFlight(flight)
+                                    : UpdateFlight(flight),
+                              );
+                              Navigator.pop(context);
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  backgroundColor: const Color(0xFF1E1E1E),
+                                  content: Text(
+                                    'Vui lòng điền đầy đủ thông tin',
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.bodyMedium?.copyWith(
+                                      color: AppColors.white,
+                                      fontFamily: 'Montserrat',
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }
+                          },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryColor,
                     foregroundColor: AppColors.white,

@@ -8,8 +8,9 @@ class BottomNavigationWidget extends StatelessWidget {
   const BottomNavigationWidget({super.key, required this.currentIndex});
 
   void _handleNavigation(BuildContext context, int index) {
-    if (index == currentIndex)
+    if (index == currentIndex) {
       return; // Không điều hướng nếu đang ở màn hình hiện tại
+    }
     switch (index) {
       case 0:
         Navigator.pushReplacementNamed(context, AppRoutes.adminDashboard);

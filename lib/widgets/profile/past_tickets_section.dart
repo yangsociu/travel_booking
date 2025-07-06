@@ -8,11 +8,32 @@ class PastTicketsSection extends StatelessWidget {
   final String userEmail;
   final FlightService flightService;
 
-  const PastTicketsSection({
+  PastTicketsSection({
     super.key,
     required this.userEmail,
     required this.flightService,
   });
+
+  // Ánh xạ airlineId sang tên hãng
+  final Map<String, String> _airlineNames = {
+    'VN': 'Vietnam Airlines',
+    'VJ': 'VietJet',
+    'BB': 'Bamboo Airways',
+  };
+
+  // Ánh xạ airlineId sang đường dẫn logo
+  String? _getAirlineLogo(String airlineId) {
+    switch (airlineId) {
+      case 'VN':
+        return 'assets/images/vietnam_airlines.png';
+      case 'VJ':
+        return 'assets/images/vietjet_air.jpg';
+      case 'BB':
+        return 'assets/images/bamboo_airways.png';
+      default:
+        return null;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +60,7 @@ class PastTicketsSection extends StatelessWidget {
 
         return ListView.builder(
           shrinkWrap: true,
-          physics: const ClampingScrollPhysics(), // Bật cuộn
+          physics: const ClampingScrollPhysics(),
           itemCount: tickets.length,
           itemBuilder: (context, index) {
             final ticket = tickets[index];
@@ -47,6 +68,10 @@ class PastTicketsSection extends StatelessWidget {
                 ((int.tryParse(ticket.seat[0]) ?? 5) <= 4)
                     ? 'Thương gia'
                     : 'Phổ thông';
+            final airlineName =
+                _airlineNames[ticket.flight.airlineId] ?? 'Unknown Airline';
+            final logoPath = _getAirlineLogo(ticket.flight.airlineId);
+
             return Container(
               margin: const EdgeInsets.only(bottom: 16),
               padding: const EdgeInsets.all(16),
@@ -72,6 +97,40 @@ class PastTicketsSection extends StatelessWidget {
                       fontWeight: FontWeight.w600,
                       color: AppColors.black,
                     ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      logoPath != null
+                          ? Image.asset(
+                            logoPath,
+                            width: 40,
+                            height: 40,
+                            fit: BoxFit.contain,
+                            errorBuilder:
+                                (context, error, stackTrace) => Icon(
+                                  Icons.airplane_ticket,
+                                  size: 40,
+                                  color: AppColors.grey.withOpacity(0.5),
+                                ),
+                          )
+                          : Icon(
+                            Icons.airplane_ticket,
+                            size: 40,
+                            color: AppColors.grey.withOpacity(0.5),
+                          ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Hãng: $airlineName',
+                        style: const TextStyle(
+                          fontFamily: 'Montserrat',
+                          fontSize: 14,
+                          color: AppColors.black,
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -81,6 +140,8 @@ class PastTicketsSection extends StatelessWidget {
                       fontSize: 14,
                       color: AppColors.black,
                     ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -90,6 +151,8 @@ class PastTicketsSection extends StatelessWidget {
                       fontSize: 14,
                       color: AppColors.black,
                     ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -99,6 +162,8 @@ class PastTicketsSection extends StatelessWidget {
                       fontSize: 14,
                       color: AppColors.black,
                     ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -108,6 +173,8 @@ class PastTicketsSection extends StatelessWidget {
                       fontSize: 14,
                       color: AppColors.primaryColor,
                     ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -117,6 +184,8 @@ class PastTicketsSection extends StatelessWidget {
                       fontSize: 14,
                       color: AppColors.grey,
                     ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                   ),
                 ],
               ),

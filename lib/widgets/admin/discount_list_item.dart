@@ -36,18 +36,90 @@ class DiscountListItem extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Mã: ${discount.code}',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.white,
-                    fontFamily: 'Montserrat',
+                Expanded(
+                  child: Text(
+                    'Mã: ${discount.code}',
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.white,
+                      fontFamily: 'Montserrat',
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 IconButton(
                   icon: const Icon(Icons.delete, color: Colors.redAccent),
-                  onPressed: onDelete,
+                  onPressed: () {
+                    if (discount.documentId.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Lỗi: Không tìm thấy ID mã giảm giá'),
+                          backgroundColor: Colors.red,
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                      return;
+                    }
+                    showDialog<bool>(
+                      context: context,
+                      builder:
+                          (dialogContext) => AlertDialog(
+                            backgroundColor: const Color(0xFF1E1E1E),
+                            title: Text(
+                              'Xác nhận xóa',
+                              style: Theme.of(
+                                context,
+                              ).textTheme.bodyLarge?.copyWith(
+                                color: AppColors.white,
+                                fontFamily: 'Montserrat',
+                              ),
+                            ),
+                            content: Text(
+                              'Bạn có chắc muốn xóa mã "${discount.code}"?',
+                              style: Theme.of(
+                                context,
+                              ).textTheme.bodyMedium?.copyWith(
+                                color: AppColors.white,
+                                fontFamily: 'Montserrat',
+                              ),
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed:
+                                    () => Navigator.pop(dialogContext, false),
+                                child: Text(
+                                  'Hủy',
+                                  style: Theme.of(
+                                    context,
+                                  ).textTheme.bodyMedium?.copyWith(
+                                    color: AppColors.grey,
+                                    fontFamily: 'Montserrat',
+                                  ),
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  print(
+                                    'Calling onDelete for discount: ${discount.code}, documentId: ${discount.documentId}',
+                                  );
+                                  onDelete();
+                                  Navigator.pop(dialogContext, true);
+                                },
+                                child: Text(
+                                  'Xóa',
+                                  style: Theme.of(
+                                    context,
+                                  ).textTheme.bodyMedium?.copyWith(
+                                    color: Colors.redAccent,
+                                    fontFamily: 'Montserrat',
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                    );
+                  },
                 ),
               ],
             ),
@@ -62,7 +134,9 @@ class DiscountListItem extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Hết hạn: ${dateFormat.format(discount.validUntil!)}',
+              discount.validUntil != null
+                  ? 'Hết hạn: ${dateFormat.format(discount.validUntil!)}'
+                  : 'Hết hạn: Không thời hạn',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 fontSize: 14,
                 color: AppColors.grey,

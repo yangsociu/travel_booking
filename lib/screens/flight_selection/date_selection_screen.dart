@@ -29,7 +29,7 @@ class DateSelectionScreen extends StatelessWidget {
               surface: AppColors.white,
               onSurface: AppColors.black,
             ),
-            dialogBackgroundColor: AppColors.white,
+            dialogTheme: DialogThemeData(backgroundColor: AppColors.white),
           ),
           child: child!,
         );

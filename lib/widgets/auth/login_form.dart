@@ -19,6 +19,7 @@ class _LoginFormState extends State<LoginForm> {
       GlobalKey<ScaffoldMessengerState>();
   bool _isLoading = false;
   String? _errorMessage;
+  bool _obscurePassword = true;
 
   Future<void> _login() async {
     if (_formKey.currentState!.validate()) {
@@ -125,10 +126,11 @@ class _LoginFormState extends State<LoginForm> {
       ),
       child: Column(
         children: [
-          const Icon(
-            Icons.airplanemode_active,
-            size: 48,
-            color: AppColors.primaryColor,
+          Image.asset(
+            'assets/images/logo.png',
+            width: 180,
+            height: 180,
+            fit: BoxFit.contain,
           ),
           const SizedBox(height: 16),
           Text(
@@ -156,12 +158,47 @@ class _LoginFormState extends State<LoginForm> {
                 TextFormField(
                   controller: _emailController,
                   decoration: InputDecoration(
+                    prefixIcon: const Icon(
+                      Icons.email_outlined,
+                      color: Colors.lightBlue,
+                      size: 26,
+                    ),
                     labelText: 'Email',
+                    labelStyle: const TextStyle(
+                      color: Colors.black87,
+                      fontSize: 16,
+                    ),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(22),
+                      borderSide: const BorderSide(
+                        color: Colors.black,
+                        width: 1.2,
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(22),
+                      borderSide: const BorderSide(
+                        color: Colors.black,
+                        width: 1.2,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(22),
+                      borderSide: const BorderSide(
+                        color: Colors.black,
+                        width: 1.8,
+                      ),
                     ),
                     filled: true,
-                    fillColor: AppColors.white,
+                    fillColor: Colors.white,
+                    contentPadding: const EdgeInsets.symmetric(
+                      vertical: 8,
+                      horizontal: 8,
+                    ),
+                    errorText:
+                        _errorMessage == 'Email không hợp lệ.'
+                            ? _errorMessage
+                            : null,
                   ),
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) {
@@ -180,49 +217,121 @@ class _LoginFormState extends State<LoginForm> {
                 TextFormField(
                   controller: _passwordController,
                   decoration: InputDecoration(
+                    prefixIcon: const Icon(
+                      Icons.lock_outline,
+                      color: Colors.lightBlue,
+                      size: 26,
+                    ),
                     labelText: 'Mật khẩu',
+                    labelStyle: const TextStyle(
+                      color: Colors.black87,
+                      fontSize: 16,
+                    ),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(22),
+                      borderSide: const BorderSide(
+                        color: Colors.black,
+                        width: 1.2,
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(22),
+                      borderSide: const BorderSide(
+                        color: Colors.black,
+                        width: 1.2,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(22),
+                      borderSide: const BorderSide(
+                        color: Colors.black,
+                        width: 1.8,
+                      ),
                     ),
                     filled: true,
-                    fillColor: AppColors.white,
+                    fillColor: Colors.white,
+                    contentPadding: const EdgeInsets.symmetric(
+                      vertical: 8,
+                      horizontal: 8,
+                    ),
+                    errorText:
+                        _errorMessage == 'Mật khẩu không đúng.'
+                            ? _errorMessage
+                            : null,
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                        color: Colors.lightBlue,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
+                      },
+                    ),
                   ),
-                  obscureText: true,
+                  obscureText: _obscurePassword,
                   validator:
                       (value) =>
                           value!.isEmpty ? 'Vui lòng nhập mật khẩu' : null,
                 ),
                 const SizedBox(height: 16),
-                if (_errorMessage != null)
+                if (_errorMessage != null &&
+                    _errorMessage != 'Email không hợp lệ.' &&
+                    _errorMessage != 'Mật khẩu không đúng.')
                   Text(
                     _errorMessage!,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.grey,
+                      color: Colors.red,
                       fontSize: 14,
                     ),
                   ),
                 const SizedBox(height: 16),
                 _isLoading
                     ? const CircularProgressIndicator()
-                    : ElevatedButton(
-                      onPressed: _login,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primaryColor,
-                        foregroundColor: AppColors.black,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 32,
-                          vertical: 12,
+                    : SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _login,
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 20),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(22),
+                          ),
+                          elevation: 0,
+                          backgroundColor: Colors.transparent,
+                          shadowColor: Colors.transparent,
+                          splashFactory: InkRipple.splashFactory,
                         ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      child: Text(
-                        'Đăng nhập',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.white,
+                        child: Ink(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                AppColors.primaryColor,
+                                AppColors.primaryColor.withOpacity(0.85),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(22),
+                          ),
+                          child: Container(
+                            alignment: Alignment.center,
+                            height: 54,
+                            child: Text(
+                              'Đăng nhập',
+                              style: Theme.of(
+                                context,
+                              ).textTheme.bodyLarge?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w800,
+                                fontSize: 18,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ),

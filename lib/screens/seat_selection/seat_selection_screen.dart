@@ -18,7 +18,7 @@ class SeatSelectionScreen extends StatelessWidget {
   final String phoneNumber;
   final String email;
 
-  SeatSelectionScreen({
+  const SeatSelectionScreen({
     super.key,
     required this.flight,
     this.returnFlight,
@@ -342,96 +342,111 @@ class SeatSelectionScreen extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(
-                    Icons.flight_takeoff,
-                    size: 20,
-                    color: AppColors.primaryColor,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    '${flight.departureCity} (${flight.departureAirportName})',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontFamily: 'Montserrat',
-                      fontSize: 14,
-                      color: AppColors.black,
-                      fontWeight: FontWeight.w400,
+          Flexible(
+            flex: 1,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.flight_takeoff,
+                      size: 20,
+                      color: AppColors.primaryColor,
                     ),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        '${flight.departureCity} (${flight.departureAirportName})',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontFamily: 'Montserrat',
+                          fontSize: 14,
+                          color: AppColors.black,
+                          fontWeight: FontWeight.w400,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  flight.departureAirportCode,
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    fontFamily: 'Montserrat',
+                    fontSize: 18,
+                    color: AppColors.black,
+                    fontWeight: FontWeight.w600,
                   ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              Text(
-                flight.departureAirportCode,
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  fontFamily: 'Montserrat',
-                  fontSize: 18,
-                  color: AppColors.black,
-                  fontWeight: FontWeight.w600,
                 ),
-              ),
-              Text(
-                departureTime,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontFamily: 'Montserrat',
-                  fontSize: 14,
-                  color: AppColors.black,
-                  fontWeight: FontWeight.w500,
+                Text(
+                  departureTime,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontFamily: 'Montserrat',
+                    fontSize: 14,
+                    color: AppColors.black,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
           Icon(
             Icons.flight,
             size: 24,
             color: AppColors.primaryColor.withOpacity(0.7),
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Row(
-                children: [
-                  Text(
-                    '${flight.arrivalCity} (${flight.arrivalAirportName})',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontFamily: 'Montserrat',
-                      fontSize: 14,
-                      color: AppColors.black,
-                      fontWeight: FontWeight.w400,
+          Flexible(
+            flex: 1,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        '${flight.arrivalCity} (${flight.arrivalAirportName})',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontFamily: 'Montserrat',
+                          fontSize: 14,
+                          color: AppColors.black,
+                          fontWeight: FontWeight.w400,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                        textAlign: TextAlign.right,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Icon(
-                    Icons.flight_land,
-                    size: 20,
-                    color: AppColors.primaryColor,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              Text(
-                flight.arrivalAirportCode,
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  fontFamily: 'Montserrat',
-                  fontSize: 18,
-                  color: AppColors.black,
-                  fontWeight: FontWeight.w600,
+                    const SizedBox(width: 8),
+                    Icon(
+                      Icons.flight_land,
+                      size: 20,
+                      color: AppColors.primaryColor,
+                    ),
+                  ],
                 ),
-              ),
-              Text(
-                arrivalTime,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontFamily: 'Montserrat',
-                  fontSize: 14,
-                  color: AppColors.black,
-                  fontWeight: FontWeight.w500,
+                const SizedBox(height: 4),
+                Text(
+                  flight.arrivalAirportCode,
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    fontFamily: 'Montserrat',
+                    fontSize: 18,
+                    color: AppColors.black,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              ),
-            ],
+                Text(
+                  arrivalTime,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontFamily: 'Montserrat',
+                    fontSize: 14,
+                    color: AppColors.black,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),

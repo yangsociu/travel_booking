@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:booking_app/blocs/auth/auth_bloc.dart';
 import 'package:booking_app/blocs/auth/auth_state.dart';
 import 'package:booking_app/routes/app_routes.dart';
-import 'package:booking_app/utils/app_colors.dart';
 import 'package:booking_app/widgets/auth/register_form.dart';
 
 class RegisterScreen extends StatelessWidget {

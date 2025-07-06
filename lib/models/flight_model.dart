@@ -12,6 +12,7 @@ class FlightModel extends Equatable {
   final DateTime departureTime;
   final DateTime arrivalTime;
   final double price;
+  final String airlineId;
 
   const FlightModel({
     required this.id,
@@ -25,6 +26,7 @@ class FlightModel extends Equatable {
     required this.departureTime,
     required this.arrivalTime,
     required this.price,
+    required this.airlineId,
   });
 
   factory FlightModel.fromJson(Map<String, dynamic> json, String documentId) {
@@ -50,6 +52,8 @@ class FlightModel extends Equatable {
                   DateTime.now()
               : DateTime.now(),
       price: double.tryParse(json['price']?.toString() ?? '0.0') ?? 0.0,
+      airlineId:
+          (json['airlineId'] as String?) ?? 'UNKNOWN', // Thêm giá trị mặc định
     );
   }
 
@@ -66,6 +70,7 @@ class FlightModel extends Equatable {
       'departureTime': departureTime.toIso8601String(),
       'arrivalTime': arrivalTime.toIso8601String(),
       'price': price.toString(),
+      'airlineId': airlineId,
     };
   }
 
@@ -82,5 +87,6 @@ class FlightModel extends Equatable {
     departureTime,
     arrivalTime,
     price,
+    airlineId,
   ];
 }

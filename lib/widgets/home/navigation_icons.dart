@@ -1,93 +1,123 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:booking_app/utils/app_colors.dart';
 
-class NavigationIcons extends StatelessWidget {
-  final int? selectedIndex;
-  final ValueChanged<int> onIconSelected;
+class CustomBottomNavigation extends StatelessWidget {
+  final int currentIndex;
+  final Function(int) onTap;
 
-  const NavigationIcons({
-    super.key,
-    required this.selectedIndex,
-    required this.onIconSelected,
-  });
+  const CustomBottomNavigation({
+    Key? key,
+    required this.currentIndex,
+    required this.onTap,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    // Lấy màu chính từ theme
+    final primaryColor = Theme.of(context).primaryColor;
+
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12),
+      margin: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+      height: 65,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(25),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.15),
-            blurRadius: 10,
-            spreadRadius: 2,
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 30,
+            spreadRadius: 5,
+            offset: const Offset(0, 10),
           ),
         ],
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          _buildIconButton(icon: CupertinoIcons.airplane, index: 0, size: 30),
-          _buildIconButton(
-            icon: CupertinoIcons.building_2_fill,
-            index: 1,
-            size: 30,
-          ),
-          _buildIconButton(
-            icon: CupertinoIcons.ellipsis_circle,
-            index: 2,
-            size: 30,
-          ),
-        ],
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(25),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _buildNavItem(
+              context: context,
+              icon: Icons.home_outlined,
+              activeIcon: Icons.home_rounded,
+              label: 'Trang chủ',
+              index: 0,
+              primaryColor: primaryColor,
+            ),
+            _buildNavItem(
+              context: context,
+              icon: Icons.search_outlined,
+              activeIcon: Icons.search_rounded,
+              label: 'Tìm kiếm',
+              index: 1,
+              primaryColor: primaryColor,
+            ),
+            _buildNavItem(
+              context: context,
+              icon: Icons.bookmark_border_outlined,
+              activeIcon: Icons.bookmark_rounded,
+              label: 'Đặt chỗ',
+              index: 2,
+              primaryColor: primaryColor,
+            ),
+            _buildNavItem(
+              context: context,
+              icon: Icons.person_outline_rounded,
+              activeIcon: Icons.person_rounded,
+              label: 'Hồ sơ',
+              index: 3,
+              primaryColor: primaryColor,
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildIconButton({
+  Widget _buildNavItem({
+    required BuildContext context,
     required IconData icon,
+    required IconData activeIcon,
+    required String label,
     required int index,
-    required double size,
+    required Color primaryColor,
   }) {
-    return GestureDetector(
-      onTap: () => onIconSelected(index),
-      child: Container(
-        padding: const EdgeInsets.all(14),
+    final isSelected = currentIndex == index;
+
+    return InkWell(
+      onTap: () => onTap(index),
+      splashColor: Colors.transparent,
+      highlightColor: Colors.transparent,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOutCirc,
+        padding: EdgeInsets.symmetric(
+          horizontal: isSelected ? 16 : 8,
+          vertical: 8,
+        ),
         decoration: BoxDecoration(
           color:
-              selectedIndex == index
-                  ? AppColors.primaryColor.withOpacity(0.15)
-                  : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-          gradient:
-              selectedIndex == index
-                  ? LinearGradient(
-                    colors: [
-                      AppColors.primaryColor.withOpacity(0.2),
-                      AppColors.primaryColor.withOpacity(0.05),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  )
-                  : null,
-          boxShadow: [
-            if (selectedIndex == index)
-              BoxShadow(
-                color: AppColors.primaryColor.withOpacity(0.2),
-                blurRadius: 6,
-                spreadRadius: 1,
-              ),
-          ],
+              isSelected ? primaryColor.withOpacity(0.1) : Colors.transparent,
+          borderRadius: BorderRadius.circular(15),
         ),
-        child: Icon(
-          icon,
-          size: size,
-          color:
-              selectedIndex == index
-                  ? AppColors.primaryColor
-                  : AppColors.grey.withOpacity(0.7),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              isSelected ? activeIcon : icon,
+              color: isSelected ? primaryColor : Colors.grey,
+              size: isSelected ? 26 : 22,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? primaryColor : Colors.grey,
+                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
+          ],
         ),
       ),
     );

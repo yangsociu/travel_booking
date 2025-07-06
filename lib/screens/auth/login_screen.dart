@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:booking_app/routes/app_routes.dart';
-import 'package:booking_app/utils/app_colors.dart';
 import 'package:booking_app/widgets/auth/login_form.dart';
 
 class LoginScreen extends StatelessWidget {

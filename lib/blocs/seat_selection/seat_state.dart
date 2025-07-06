@@ -15,7 +15,7 @@ class SeatLoaded extends SeatState {
   final Map<String, bool> returnSeats;
   final List<String> returnSelectedSeats; //khứ hồi seats
 
-  SeatLoaded({
+  const SeatLoaded({
     required this.seats,
     required this.selectedSeats,
     required this.returnSeats,
