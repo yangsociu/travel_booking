@@ -7,7 +7,7 @@ import 'package:booking_app/services/flight_service.dart';
 import 'package:booking_app/widgets/home/custom_bottom_navigation.dart';
 import 'package:booking_app/widgets/home/flight_search_bar.dart';
 import 'package:booking_app/widgets/home/greeting_section.dart';
-import 'package:booking_app/widgets/home/discount_banner_list.dart'; // Cập nhật import
+import 'package:booking_app/widgets/home/discount_banner_list.dart';
 import 'package:booking_app/widgets/home/hot_destinations.dart';
 import 'package:booking_app/routes/app_routes.dart';
 import 'package:booking_app/utils/app_colors.dart';
@@ -82,10 +82,15 @@ class HomeScreen extends StatelessWidget {
                                 icon: Icons.hotel,
                                 label: 'Hotels',
                                 isSelected: state.selectedNavIconIndex == 1,
-                                onTap:
-                                    () => context.read<HomeBloc>().add(
-                                      SelectNavIcon(1),
-                                    ),
+                                onTap: () {
+                                  context.read<HomeBloc>().add(
+                                    SelectNavIcon(1),
+                                  );
+                                  Navigator.pushNamed(
+                                    context,
+                                    AppRoutes.hotelList,
+                                  );
+                                },
                               ),
                               _buildNavIcon(
                                 context,

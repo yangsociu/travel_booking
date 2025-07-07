@@ -1,8 +1,10 @@
 // main.dart
 // File khởi chạy ứng dụng đặt vé máy bay (bỏ localizations)
 import 'package:booking_app/blocs/home/home_bloc.dart';
+import 'package:booking_app/blocs/hotel/hotel_bloc.dart';
 import 'package:booking_app/routes/app_routes.dart';
 import 'package:booking_app/services/flight_service.dart';
+import 'package:booking_app/services/hotel_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -30,6 +32,12 @@ class MyApp extends StatelessWidget {
           create: (context) => HomeBloc(flightService: FlightService()),
         ),
         Provider<FlightService>(create: (_) => FlightService()),
+        BlocProvider(
+          create: (context) => HotelBloc(hotelService: HotelService()),
+        ),
+        BlocProvider(
+          create: (context) => HotelBloc(hotelService: HotelService()),
+        ),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

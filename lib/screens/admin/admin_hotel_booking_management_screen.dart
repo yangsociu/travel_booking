@@ -1,36 +1,41 @@
-import 'package:booking_app/models/ticket.dart';
+import 'package:booking_app/blocs/hotel/hotel_bloc.dart';
+import 'package:booking_app/blocs/hotel/hotel_event.dart';
+import 'package:booking_app/blocs/hotel/hotel_state.dart';
+import 'package:booking_app/models/hotel_model.dart';
 import 'package:booking_app/routes/app_routes.dart';
+import 'package:booking_app/services/hotel_service.dart';
+import 'package:booking_app/utils/app_colors.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:booking_app/blocs/admin_flight/admin_booking_bloc.dart';
-import 'package:booking_app/services/ticket_service.dart';
-import 'package:booking_app/utils/app_colors.dart';
-import 'package:booking_app/widgets/admin/ticket_list_item.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/intl.dart';
 
-class AdminBookingManagementScreenWrapper extends StatelessWidget {
-  const AdminBookingManagementScreenWrapper({super.key});
+class AdminHotelBookingManagementScreenWrapper extends StatelessWidget {
+  const AdminHotelBookingManagementScreenWrapper({super.key});
 
   @override
   Widget build(BuildContext context) {
-    print('Creating AdminBookingBloc in AdminBookingManagementScreenWrapper');
+    print('Creating HotelBloc in AdminHotelBookingManagementScreenWrapper');
     return BlocProvider(
       create:
-          (context) => AdminBookingBloc(TicketService())..add(LoadTickets()),
-      child: const AdminBookingManagementScreen(),
+          (context) =>
+              HotelBloc(hotelService: HotelService())
+                ..add(LoadAllHotelBookings()),
+      child: const AdminHotelBookingManagementScreen(),
     );
   }
 }
 
-class AdminBookingManagementScreen extends StatelessWidget {
-  const AdminBookingManagementScreen({super.key});
+class AdminHotelBookingManagementScreen extends StatelessWidget {
+  const AdminHotelBookingManagementScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<AdminBookingBloc, AdminBookingState>(
+    return BlocListener<HotelBloc, HotelState>(
       listener: (context, state) {
         print('BlocListener received state: $state');
-        if (state is AdminBookingError) {
+        if (state is HotelError) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               backgroundColor: const Color(0xFF1E1E1E),
@@ -43,12 +48,26 @@ class AdminBookingManagementScreen extends StatelessWidget {
               ),
             ),
           );
-        } else if (state is AdminBookingLoaded) {
+        } else if (state is AllHotelBookingsLoaded) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               backgroundColor: const Color(0xFF1E1E1E),
               content: Text(
-                'Cập nhật danh sách vé thành công',
+                'Cập nhật danh sách đặt phòng khách sạn thành công',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppColors.white,
+                  fontFamily: 'Montserrat',
+                ),
+              ),
+            ),
+          );
+        } else if (state is HotelBookingCancelSuccess) {
+          context.read<HotelBloc>().add(LoadAllHotelBookings());
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              backgroundColor: const Color(0xFF1E1E1E),
+              content: Text(
+                'Xóa đặt phòng ${state.bookingId} thành công',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: AppColors.white,
                   fontFamily: 'Montserrat',
@@ -91,7 +110,7 @@ class AdminBookingManagementScreen extends StatelessWidget {
                         color: AppColors.primaryColor,
                       ),
                       title: Text(
-                        'Quản lý vé',
+                        'Quản lý vé máy bay',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           fontSize: 16,
                           color: AppColors.white,
@@ -219,7 +238,7 @@ class AdminBookingManagementScreen extends StatelessWidget {
               children: [
                 AppBar(
                   title: Text(
-                    'Quản lý vé đặt',
+                    'Quản lý đặt phòng khách sạn',
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       color: AppColors.white,
                       fontSize: 20,
@@ -241,27 +260,28 @@ class AdminBookingManagementScreen extends StatelessWidget {
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
-                    child: BlocBuilder<AdminBookingBloc, AdminBookingState>(
+                    child: BlocBuilder<HotelBloc, HotelState>(
                       builder: (context, state) {
                         print('BlocBuilder received state: $state');
-                        if (state is AdminBookingLoading) {
+                        if (state is HotelLoading) {
                           return const Center(
                             child: CircularProgressIndicator(
                               color: AppColors.primaryColor,
                             ),
                           );
-                        } else if (state is AdminBookingLoaded) {
-                          final groupedTickets = <String, List<Ticket>>{};
-                          for (var ticket in state.tickets) {
-                            final key = '${ticket.phoneNumber}_${ticket.email}';
-                            groupedTickets
+                        } else if (state is AllHotelBookingsLoaded) {
+                          final groupedBookings =
+                              <String, List<HotelBooking>>{};
+                          for (var booking in state.bookings) {
+                            final key = '${booking.userId}_${booking.id}';
+                            groupedBookings
                                 .putIfAbsent(key, () => [])
-                                .add(ticket);
+                                .add(booking);
                           }
-                          return groupedTickets.isEmpty
+                          return groupedBookings.isEmpty
                               ? Center(
                                 child: Text(
-                                  'Không có vé nào.',
+                                  'Không có đặt phòng khách sạn nào.',
                                   style: Theme.of(
                                     context,
                                   ).textTheme.bodyMedium?.copyWith(
@@ -274,18 +294,18 @@ class AdminBookingManagementScreen extends StatelessWidget {
                               : RefreshIndicator(
                                 color: AppColors.primaryColor,
                                 onRefresh: () async {
-                                  print('Refreshing ticket list');
-                                  context.read<AdminBookingBloc>().add(
-                                    LoadTickets(),
+                                  print('Refreshing hotel booking list');
+                                  context.read<HotelBloc>().add(
+                                    LoadAllHotelBookings(),
                                   );
                                 },
                                 child: ListView.builder(
-                                  itemCount: groupedTickets.length,
+                                  itemCount: groupedBookings.length,
                                   itemBuilder: (context, index) {
-                                    final key = groupedTickets.keys.elementAt(
+                                    final key = groupedBookings.keys.elementAt(
                                       index,
                                     );
-                                    final tickets = groupedTickets[key]!;
+                                    final bookings = groupedBookings[key]!;
                                     return Container(
                                       margin: const EdgeInsets.symmetric(
                                         vertical: 8.0,
@@ -311,7 +331,7 @@ class AdminBookingManagementScreen extends StatelessWidget {
                                             CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            'Đặt chỗ: ${tickets.first.phoneNumber} / ${tickets.first.email}',
+                                            'Đặt phòng: ${bookings.first.userId}',
                                             style: Theme.of(
                                               context,
                                             ).textTheme.bodyLarge?.copyWith(
@@ -322,12 +342,12 @@ class AdminBookingManagementScreen extends StatelessWidget {
                                             ),
                                           ),
                                           const SizedBox(height: 8),
-                                          ...tickets.map(
-                                            (ticket) => TicketListItem(
-                                              ticket: ticket,
+                                          ...bookings.map(
+                                            (booking) => HotelBookingListItem(
+                                              booking: booking,
                                               onDelete: () async {
                                                 print(
-                                                  'Attempting to delete ticket: ${ticket.id}',
+                                                  'Attempting to delete hotel booking: ${booking.id}',
                                                 );
                                                 final confirm = await showDialog<
                                                   bool
@@ -357,7 +377,7 @@ class AdminBookingManagementScreen extends StatelessWidget {
                                                               ),
                                                         ),
                                                         content: Text(
-                                                          'Bạn có chắc chắn muốn xóa vé này?',
+                                                          'Bạn có chắc chắn muốn xóa đặt phòng này?',
                                                           style: Theme.of(
                                                                 context,
                                                               )
@@ -418,37 +438,10 @@ class AdminBookingManagementScreen extends StatelessWidget {
                                                       ),
                                                 );
                                                 if (confirm == true) {
-                                                  context
-                                                      .read<AdminBookingBloc>()
-                                                      .add(
-                                                        DeleteTicket(
-                                                          ticket.documentId,
-                                                        ),
-                                                      );
-                                                  context
-                                                      .read<AdminBookingBloc>()
-                                                      .add(LoadTickets());
-                                                  ScaffoldMessenger.of(
-                                                    context,
-                                                  ).showSnackBar(
-                                                    SnackBar(
-                                                      backgroundColor:
-                                                          const Color(
-                                                            0xFF1E1E1E,
-                                                          ),
-                                                      content: Text(
-                                                        'Xóa vé thành công',
-                                                        style: Theme.of(context)
-                                                            .textTheme
-                                                            .bodyMedium
-                                                            ?.copyWith(
-                                                              color:
-                                                                  AppColors
-                                                                      .white,
-                                                              fontFamily:
-                                                                  'Montserrat',
-                                                            ),
-                                                      ),
+                                                  context.read<HotelBloc>().add(
+                                                    CancelHotelBooking(
+                                                      booking.id,
+                                                      booking.userId,
                                                     ),
                                                   );
                                                 }
@@ -461,7 +454,7 @@ class AdminBookingManagementScreen extends StatelessWidget {
                                   },
                                 ),
                               );
-                        } else if (state is AdminBookingError) {
+                        } else if (state is HotelError) {
                           return Center(
                             child: Text(
                               'Lỗi: ${state.message}',
@@ -496,6 +489,111 @@ class AdminBookingManagementScreen extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class HotelBookingListItem extends StatelessWidget {
+  final HotelBooking booking;
+  final VoidCallback onDelete;
+
+  const HotelBookingListItem({
+    super.key,
+    required this.booking,
+    required this.onDelete,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<DocumentSnapshot>(
+      future:
+          FirebaseFirestore.instance
+              .collection('hotels')
+              .doc(booking.hotelId)
+              .get(),
+      builder: (context, hotelSnapshot) {
+        if (!hotelSnapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (hotelSnapshot.hasError) {
+          print('Error loading hotel data: ${hotelSnapshot.error}');
+          return Center(
+            child: Text(
+              'Lỗi khi tải dữ liệu khách sạn: ${hotelSnapshot.error}',
+            ),
+          );
+        }
+
+        final hotelData = hotelSnapshot.data!.data() as Map<String, dynamic>;
+        final hotelName = hotelData['name'] ?? 'Unknown Hotel';
+
+        return Container(
+          margin: const EdgeInsets.symmetric(vertical: 4.0),
+          padding: const EdgeInsets.all(8.0),
+          decoration: BoxDecoration(
+            color: const Color(0xFF252545),
+            borderRadius: BorderRadius.circular(8.0),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Mã đặt phòng: ${booking.id}',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppColors.white,
+                  fontFamily: 'Montserrat',
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Khách sạn: $hotelName',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppColors.white,
+                  fontFamily: 'Montserrat',
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Check-in: ${DateFormat('dd MMM yyyy').format(booking.checkInDate)}',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppColors.white,
+                  fontFamily: 'Montserrat',
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Check-out: ${DateFormat('dd MMM yyyy').format(booking.checkOutDate)}',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppColors.white,
+                  fontFamily: 'Montserrat',
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Tổng giá: ${NumberFormat.currency(locale: 'vi_VN', symbol: '₫', decimalDigits: 0).format(booking.totalPrice)}',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppColors.primaryColor,
+                  fontFamily: 'Montserrat',
+                ),
+              ),
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: onDelete,
+                  child: const Text(
+                    'Xóa',
+                    style: TextStyle(
+                      color: Colors.redAccent,
+                      fontFamily: 'Montserrat',
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

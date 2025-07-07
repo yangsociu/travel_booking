@@ -28,6 +28,12 @@ class BottomNavigationWidget extends StatelessWidget {
         );
         break;
       case 3:
+        Navigator.pushReplacementNamed(
+          context,
+          AppRoutes.adminHotelBookingManagement,
+        );
+        break;
+      case 4:
         Navigator.pushReplacementNamed(context, AppRoutes.adminProfile);
         break;
     }
@@ -60,7 +66,11 @@ class BottomNavigationWidget extends StatelessWidget {
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.airplane_ticket, size: 24),
-          label: 'Vé',
+          label: 'Vé máy bay',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.hotel, size: 24),
+          label: 'Đặt phòng',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.account_circle, size: 24),

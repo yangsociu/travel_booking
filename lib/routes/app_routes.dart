@@ -15,7 +15,12 @@ class AppRoutes {
   static const String adminDashboard = '/admin_dashboard';
   static const String adminFlightManagement = '/adminFlightManagement';
   static const String adminBookingManagement = '/adminBookingManagement';
+  static const String adminHotelBookingManagement =
+      '/adminHotelBookingManagement'; // New route
   static const String adminProfile = '/admin_profile';
   static const String ticketHistory = '/ticket_history';
   static const String addDiscount = '/add_discount'; // Thêm route addDiscount
+  static const String hotelList = '/hotel_list'; // New route for hotel list
+  static const String hotelDetail =
+      '/hotel_detail'; // New route for hotel detail
 }

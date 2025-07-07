@@ -4,6 +4,8 @@ import 'package:booking_app/screens/admin/admin_dashboard_screen.dart';
 import 'package:booking_app/screens/admin/add_discount_screen.dart';
 import 'package:booking_app/screens/admin/admin_flight_management_screen.dart'
     as flight;
+import 'package:booking_app/screens/admin/admin_hotel_booking_management_screen.dart'
+    as hotel; // New import
 import 'package:booking_app/screens/auth/login_screen.dart';
 import 'package:booking_app/screens/auth/register_screen.dart';
 import 'package:booking_app/screens/home/home_screen.dart';
@@ -20,6 +22,10 @@ import 'package:booking_app/models/flight_model.dart';
 import 'package:booking_app/routes/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:booking_app/services/flight_service.dart';
+import 'package:booking_app/screens/hotel/hotel_list_screen.dart';
+import 'package:booking_app/screens/hotel/hotel_detail_screen.dart';
+import 'package:booking_app/models/hotel_model.dart';
+import 'package:booking_app/services/hotel_service.dart';
 
 class AppRouter {
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -115,6 +121,11 @@ class AppRouter {
         return MaterialPageRoute(
           builder: (_) => const booking.AdminBookingManagementScreenWrapper(),
         );
+      case AppRoutes.adminHotelBookingManagement:
+        return MaterialPageRoute(
+          builder:
+              (_) => const hotel.AdminHotelBookingManagementScreenWrapper(),
+        );
       case AppRoutes.addDiscount:
         return MaterialPageRoute(
           builder: (_) => const AddDiscountScreenWrapper(),
@@ -122,11 +133,25 @@ class AppRouter {
         );
       case AppRoutes.ticketHistory:
         return MaterialPageRoute(
-          builder: (_) => TicketHistoryScreen(flightService: FlightService()),
+          builder:
+              (_) => TicketHistoryScreen(
+                flightService: FlightService(),
+                hotelService: HotelService(),
+              ),
         );
       case AppRoutes.profile:
         return MaterialPageRoute(
           builder: (_) => ProfileScreen(flightService: FlightService()),
+        );
+      case AppRoutes.hotelList:
+        return MaterialPageRoute(
+          builder: (_) => HotelListScreen(hotelService: HotelService()),
+        );
+      case AppRoutes.hotelDetail:
+        final args = settings.arguments as Map<String, dynamic>?;
+        return MaterialPageRoute(
+          builder:
+              (_) => HotelDetailScreen(hotel: args?['hotel'] as HotelModel),
         );
       default:
         return MaterialPageRoute(

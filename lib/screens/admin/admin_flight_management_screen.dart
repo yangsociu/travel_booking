@@ -128,6 +128,26 @@ class AdminFlightManagementScreen extends StatelessWidget {
                     ),
                     ListTile(
                       leading: const Icon(
+                        Icons.hotel,
+                        color: AppColors.primaryColor,
+                      ),
+                      title: Text(
+                        'Quản lý đặt phòng khách sạn',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontSize: 16,
+                          color: AppColors.white,
+                          fontFamily: 'Montserrat',
+                        ),
+                      ),
+                      onTap: () {
+                        Navigator.pushReplacementNamed(
+                          context,
+                          AppRoutes.adminHotelBookingManagement,
+                        );
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(
                         Icons.discount,
                         color: AppColors.primaryColor,
                       ),
